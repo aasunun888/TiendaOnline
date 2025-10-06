@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Imagenes\51f7191bd47f34a131a3aa1d766b71ef.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Administracion\Models\" />
+    <Folder Include="Areas\Administracion\Views\" />
+    <Folder Include="Entidades\" />
+    <Folder Include="Imagenes\" />
+  </ItemGroup>
+
+</Project>
