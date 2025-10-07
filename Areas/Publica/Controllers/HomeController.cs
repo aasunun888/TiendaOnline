@@ -9,25 +9,24 @@ namespace TiendaOnline.Areas.Publica.Controllers
         // GET: HomeController
         public ActionResult Index()
         {
-            var modelo = new HomeViewModel { 
-                Titulo = "Bienvenido a la tienda",
-                Descripcion = "¿Quieres destacar con estilo y comodidad? Soy Alberto y  " +
-                "os hablo de calidad, Street Size!, mi ropa combina la última moda con calidad excepcional, " +
-                "diseñada para realzar tu personalidad. Desde estilosas camisetas únicas para llevar flow a todas " +
-                "horas hasta prendas casuales que reflejan tu estilo único, ofrezco una amplia gama de opciones. " +
-                "Descubre la diferencia con Street Size: ¡viste con confianza y destaca en cada ocasión!",
+            var modelo = new HomeViewModel
+            {
+                Titulo = "StreetSize",
+                Descripcion = "¡Vístete con confianza y destaca en cada ocasión!.",
+                ImagenUrl = "/images/51f7191bd47f34a131a3aa1d766b71ef.jpg"
             };
             return View(modelo);
         }
 
-        // GET: HomeController/Details/5
-        public ActionResult Details(int id)
+        // Funcion novedades para mostrar productos nuevos, en este caso todos son nuevos
+        public ActionResult NovedadesGet(int id)
         {
+
             return View();
         }
 
-        // GET: HomeController/Create
-        public ActionResult Create()
+        // Funcion About Us, informacion de la empresa 
+        public ActionResult About()
         {
             return View();
         }
