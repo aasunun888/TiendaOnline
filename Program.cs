@@ -1,7 +1,34 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+}).AddCookie(options =>
+{
+    options.Cookie.Name = "LogAuthCookie";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict; //Acepta que solo sean solicitudes de mi sitio web
+    options.ExpireTimeSpan = TimeSpan.FromDays(1); // Tiempo hasta que se cierre la sesion
+    options.SlidingExpiration = true; //Tiempo de inactividad siempre cuando acabe un dia
+    options.LoginPath = "/User/LoginView";
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = (context) =>
+        {
+            context.Response.Redirect("/User/LoginView");
+            return Task.CompletedTask;
+
+        }
+
+    };
+
+});
 
 var app = builder.Build();
 
@@ -17,7 +44,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 //Ruta administracion

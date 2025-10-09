@@ -39,6 +39,24 @@
     text-align: center;
 }
 
+/*Estilo para el footer*/
+footer a:hover {
+    text-decoration: underline;
+}
+
+footer i {
+    font-size: 1.2rem;
+    color: #333;
+}
+
+footer input::placeholder {
+    font-style: italic;
+}
+
+
+/*Estilo para el carrito*/
+
+
 
 /*PARA PANTALLAS PEQUEÑAS*/
 @media (max-width:900px) {
@@ -63,4 +81,25 @@
         font-weight: 500;
         text-align: center;
     }
+
+    /*MENU USUARIO EN PANTALLAS PEQUEÑAS*/
+
+    .menu-desplegable-usuario .menu-usuario {
+        position: absolute;
+        right: auto; /* quitar posicionamiento de derecha */
+        left: 50%;
+        transform: translateX(-60%); /* mover el menú hacia el lado izquierdo restando al lado X  */
+        min-width: 10rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    /*Color, posicionamiento y anchura de letra en menu*/
+    .menu-usuario .di-menu-usuario {
+        padding: 1rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
 }
+
+

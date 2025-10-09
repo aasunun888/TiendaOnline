@@ -1,2 +1,3 @@
-﻿
+﻿/* CARRITO DE LA COMPRA JS */
+
 
