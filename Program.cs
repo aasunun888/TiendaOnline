@@ -16,12 +16,12 @@ builder.Services.AddAuthentication(options =>
     options.Cookie.SameSite = SameSiteMode.Strict; //Acepta que solo sean solicitudes de mi sitio web
     options.ExpireTimeSpan = TimeSpan.FromDays(1); // Tiempo hasta que se cierre la sesion
     options.SlidingExpiration = true; //Tiempo de inactividad siempre cuando acabe un dia
-    options.LoginPath = "/User/LoginView";
+    options.LoginPath = "/auth/LoginView";
     options.Events = new CookieAuthenticationEvents
     {
         OnRedirectToLogin = (context) =>
         {
-            context.Response.Redirect("/User/LoginView");
+            context.Response.Redirect("/auth/LoginView");
             return Task.CompletedTask;
 
         }

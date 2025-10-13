@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 
 namespace TiendaOnline.Areas.Publica.Models
 {
@@ -26,6 +27,25 @@ namespace TiendaOnline.Areas.Publica.Models
         }
     }
 
+
+    public class Seguridad
+    {
+        //Instancia de PasswordHasher para manejar el hashing de contraseñas
+        private readonly PasswordHasher<string> _hasher = new();
+
+        //Método para encriptar una contraseña
+        public string Encriptar(string contraseña)
+        {
+            return _hasher.HashPassword(null, contraseña);
+        }
+
+        //Método para verificar una contraseña contra un hash almacenado
+        public bool Verificar(string contraseñaUsuario, string hashGuardado)
+        {
+            var resultado = _hasher.VerifyHashedPassword(null, hashGuardado, contraseñaUsuario);
+            return resultado == PasswordVerificationResult.Success;
+        }
+    }
 
 
 }

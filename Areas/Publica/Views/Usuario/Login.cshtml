@@ -1,0 +1,64 @@
+﻿@using TiendaOnline.Areas.Publica.Models
+@model LoginViewModel
+
+@{
+    ViewData["title"] = "Iniciar Sesión";
+ 
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" />
+}
+<!--Section login-->
+<div class="container-fluid body">
+    <div class="container py-5 contenedor-login">
+        <h2 class="text-center mb-4 ">Login</h2>
+
+        <!--Boton iniciar con Google TODO Implementar api GOOGLE-->
+        <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-light border">
+                <i class="fab fa-google me-2"></i> CONTINUAR CON GOOGLE
+            </button>
+        </div>
+
+        <!-- Separador -->
+        <div class="text-center my-3">
+            <span class="text-muted">— O —</span>
+        </div>
+
+        <!-- Formulario -->
+        <form asp-area="Publica" asp-controller="Usuario" asp-action="LoginPostAsync" method="post">
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="text" name="email" class="form-control" placeholder="Introduce tu email" required />
+                <span class="text-danger">@Model.emailComprobacion</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="contraseña" class="form-control" placeholder="Introduce tu contraseña" required />
+                <span class="text-danger">@Model.passComprobacion</span>
+            </div>
+
+            <!-- TODO Añadir recordarme y olvidar contraseña
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="recordarme" />
+                    <label class="form-check-label" for="recordarme">Recordarme</label>
+                </div>
+                <a href="#" class="text-decoration-none">¿Olvidaste tu contraseña?</a>
+            </div -->
+
+            <span class="text-danger">@Model.parametrosVacios</span>
+
+            <button type="submit" class="btn btn-dark w-100">INICIAR SESIÓN</button>
+        </form>
+
+        <!-- CTA para registro -->
+        <div class="text-center mt-4">
+            <span>
+                ¿Aún no estás registrado?
+                <a asp-area="Publica" asp-controller="Usuario" asp-action="Registrar" class="text-decoration-none fw-bold">Crear cuenta</a>
+            </span>
+        </div>
+    </div>
+</div>

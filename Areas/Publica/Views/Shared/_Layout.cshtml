@@ -75,7 +75,7 @@
                             <span class="material-symbols-outlined">person</span>
                         </a>
                          
-                        @if (User.Identity.IsAuthenticated) //TODO Añadir el control si el user esta autenticado o no atraves de las claims registradas cuando se logea un usuario
+                        @if (User.Identity.IsAuthenticated) 
                         {
                             <span class="me-4">Hola, @User.Claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault().Value</span>
                             <ul class="dropdown-menu menu-usuario">
@@ -87,7 +87,7 @@
                         }
                         else {
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-area="Publica" asp-controller="Usuario" asp-action="Login">Iniciar sesión</a></li>
+                                <li><a class="dropdown-item" asp-area="Publica" asp-controller="Usuario" asp-action="LoginView">Iniciar sesión</a></li>
                                 <li><a class="dropdown-item" asp-area="Publica" asp-controller="Usuario" asp-action="Registrar">Registrarse</a></li>  
                             </ul>
                        
@@ -102,7 +102,7 @@
         <!-- Ruta artificial TODO-->
         <nav class="navbar navbar-expand-lg navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                Enlace
+                Ruta artificial
             </div>
         </nav>
 

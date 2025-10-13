@@ -1,0 +1,20 @@
+﻿.body {
+    background-color: #F5F6F8;
+    padding:100px;
+}
+.contenedor-login {
+    width: 500px;
+    background-color: #FFFFFF;
+}
+
+/*Pantalla para moviles*/
+@media(max-width:900px){
+    .body {
+        background-color: #F5F6F8;
+        padding: 100px;
+    }
+    .contenedor-login {
+        width: 350px;
+        background-color: #FFFFFF;
+    }
+}

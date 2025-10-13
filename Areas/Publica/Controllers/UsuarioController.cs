@@ -14,20 +14,24 @@ using System.Text.RegularExpressions;
 
 namespace TiendaOnline.Areas.Publica.Controllers
 {
-  
+    [Area("Publica")]
+    [Route("auth")]
+
     public class UsuarioController : Controller
     {
         // GET: UsuarioController
 
         //Index: Perfil del usuario con datos personales y opciones de configuración.
-        public ActionResult Index()
-        {
+        private readonly ILogger<UsuarioController> _logger;
 
-            return View();
+        public UsuarioController(ILogger<UsuarioController> logger)
+        {
+            _logger = logger;
         }
 
+
         #region Login
-        [Route("login")]
+       [Route("login")]
         [HttpGet]
         // GET: Lo que el usuario ve antes de iniciar sesión.
         public ActionResult LoginView(int id)
@@ -93,15 +97,14 @@ namespace TiendaOnline.Areas.Publica.Controllers
                 {
                     conn.Open(); //Abrir conexión
 
-                    string query = "SELECT  Usuarios.Id, Usuarios,Nombre, Roles.Nombre" +
+                    string query = "SELECT  Usuarios.Id, Usuarios,Nombre, Roles.Nombre,Usuarios.ContraseñaHash" +
                         "FROM Usuarios " +
                         "JOIN Roles ON Usuario.RolId = Roles.Id" +
-                        "WHERE Email = @email AND Contraseña = @contraseña";
+                        "WHERE Email = @email";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@Email", email);
-                        cmd.Parameters.AddWithValue("@Password", contraseña); //se usará hash para mayor seguridad
 
                         DataTable tabla = new DataTable();
 
@@ -115,15 +118,21 @@ namespace TiendaOnline.Areas.Publica.Controllers
                         int idUsuario = 0;
                         string rol = "";
                         string nombreUsuario = "";
+                        string hashContraseña = "";
 
                         foreach (DataRow fila in tabla.Rows)
                         {
                             idUsuario = (int)fila["Id"];
                             nombreUsuario = (string)fila["Nombre"];
                             rol = (string)fila["Nombre"];
+                            hashContraseña = (string)fila["ContraseñaHash"];
                         }
 
-                        if(idUsuario != 0 && rol != "")
+                        //Comprobar contraseñaHash con la contraseña introducida
+                        var seguridad = new Seguridad();
+
+                        //Verificar información devuelta de la BBDD y comprobacion de la contraseña usando el método Verificar de la clase Seguridad
+                        if (idUsuario != 0 && rol != "" && seguridad.Verificar(contraseña, hashContraseña))
                         {
                             //Crear identidad de usuario y claims basandonos en email,nombre, id y rol
                             ClaimsIdentity identidadUsuario = new ClaimsIdentity([
@@ -172,6 +181,21 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
         }
         #endregion
+
+        #region Registro
+        [Route("Registrar")]
+        /*Función que prepara al usuario para registrar,traslada las credenciales del modelo de usuario*/
+        [HttpGet]
+        public IActionResult RegistroView()
+        {
+            LoginViewModel CredencialesUsuario = new();
+            return View("Registrar", CredencialesUsuario);
+        }
+        #endregion
+
+
+
+
 
 
 

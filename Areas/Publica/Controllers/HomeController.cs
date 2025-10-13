@@ -4,9 +4,13 @@ using TiendaOnline.Areas.Publica.Models;
 
 namespace TiendaOnline.Areas.Publica.Controllers
 {
+    [Area("Publica")]
+    [Route("")]
+
     public class HomeController : Controller
     {
         // GET: HomeController
+        [Route("")]
         public ActionResult Index()
         {
             var modelo = new HomeViewModel
@@ -19,6 +23,8 @@ namespace TiendaOnline.Areas.Publica.Controllers
         }
 
         // Funcion novedades para mostrar productos nuevos, en este caso todos son nuevos
+        [Route("novedades")]
+
         public ActionResult NovedadesGet(int id)
         {
 
@@ -26,66 +32,14 @@ namespace TiendaOnline.Areas.Publica.Controllers
         }
 
         // Funcion About Us, informacion de la empresa 
+        [Route("about")]
+
         public ActionResult About()
         {
             return View();
         }
 
-        // POST: HomeController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+       
         }
-
-        // GET: HomeController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: HomeController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: HomeController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: HomeController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-    }
+    
 }

@@ -1,0 +1,14 @@
+﻿
+input::placeholder {
+    font-style: italic;
+    color: #aaa;
+}
+
+button {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+    button:hover {
+        transform: translateY(-2px);
+    }

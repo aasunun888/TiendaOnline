@@ -1,0 +1,80 @@
+﻿@using TiendaOnline.Areas.Publica.Models
+@model LoginViewModel
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/registro.css" />
+}
+
+<!--Section Registrar-->
+<div class="container-fluid body">
+    <div class="container py-5 contenedor-registro">
+        <h2 class="text-center mb-4 ">Registrarse</h2>
+        <form asp-area="Publica" asp-controller="Usuario" asp-action="RegistrarPost" method="post">
+            <div class="row g-3">
+
+                <!-- Nombre -->
+                <div class="col-md-6">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="Nombre" class="form-control" required />
+                </div>
+                <!-- Apellido -->
+                <div class="col-md-6">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="Apellido" class="form-control" required />
+                </div>
+                  <!-- Email -->
+                <div class="col-md-12">
+                <label class="form-label">Email</label>
+                <div class="input-group has-validation">
+                    <span class="input-group-text">@@</span>
+                    <input type="email" name="Email" class="form-control" required />
+                </div>
+                <span class="text-danger">@Model.emailComprobacion</span>
+            </div>
+                <!-- Contraseña -->
+                <div class="col-md-12">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="Contraseña" class="form-control" required />
+                    <span class="text-danger">@Model.passComprobacion</span>
+                </div>
+
+                <!-- Teléfono -->
+                <div class="col-md-6">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="Telefono" class="form-control" required />
+                </div>
+
+                <!-- Dirección -->
+                <div class="col-md-6">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" name="Direccion" class="form-control" required />
+                </div>
+
+                <!-- Ciudad -->
+                <div class="col-md-6">
+                    <label class="form-label">Ciudad</label>
+                    <input type="text" name="Ciudad" class="form-control" required />
+                </div>
+
+                <!-- Código Postal -->
+                <div class="col-md-6">
+                    <label class="form-label">Código Postal</label>
+                    <input type="text" name="CP" class="form-control" required />
+                </div>
+
+                <!-- Mensajes de validación -->
+                <div class="col-12">
+                    <span class="text-danger">@Model.parametrosVacios</span>
+                    <span class="text-danger">@Model.usuarioExistente</span>
+                </div>
+
+                <!-- Botón de registro -->
+                <div class="col-12 text-center mt-3">
+                    <button class="btn btn-dark px-5" type="submit">Registrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
