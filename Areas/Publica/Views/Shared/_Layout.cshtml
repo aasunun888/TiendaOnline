@@ -49,6 +49,12 @@
                     <img class="img-fluid" src="~/images/Captura de pantalla 2025-10-07 144805.png" asp-append-version="true" />
                 </a>
 
+                <!-- Mostrar bienvenida y nombre usuario-->
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <span class="me-4">Hola, @User.Claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault().Value</span>
+                }
+
                 <!-- Derecha: íconos de interacción  de usuario-->
                 <ul class="navbar-nav flex-row gap-3">
                     <li class="nav-item position-relative">
@@ -77,7 +83,7 @@
                          
                         @if (User.Identity.IsAuthenticated) 
                         {
-                            <span class="me-4">Hola, @User.Claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault().Value</span>
+                           
                             <ul class="dropdown-menu menu-usuario">
                                 <li><a class="dropdown-item di-menu-usuario" asp-area="Publica" asp-controller="Usuario" asp-action="Index">Perfil</a></li>
                                 <li><a class="dropdown-item di-menu-usuario" asp-area="Publica" asp-controller="Usuario" asp-action="Pedidos">Pedidos</a></li>
@@ -86,9 +92,9 @@
                             </ul>
                         }
                         else {
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu menu-usuario">
                                 <li><a class="dropdown-item" asp-area="Publica" asp-controller="Usuario" asp-action="LoginView">Iniciar sesión</a></li>
-                                <li><a class="dropdown-item" asp-area="Publica" asp-controller="Usuario" asp-action="Registrar">Registrarse</a></li>  
+                                <li><a class="dropdown-item" asp-area="Publica" asp-controller="Usuario" asp-action="RegistroView">Registrarse</a></li>  
                             </ul>
                        
                         }

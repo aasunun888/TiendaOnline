@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="~/css/registro.css" />
 }
 
+<!--Section Imagen lateral-->
+
 <!--Section Registrar-->
 <div class="container-fluid body">
     <div class="container py-5 contenedor-registro">
@@ -38,28 +40,33 @@
                     <span class="text-danger">@Model.passComprobacion</span>
                 </div>
 
+                <!-- Separador -->
+                <div class="text-center my-3">
+                    <span class="text-muted">— Opcional —</span>
+                </div>
+
                 <!-- Teléfono -->
                 <div class="col-md-6">
                     <label class="form-label">Teléfono</label>
-                    <input type="text" name="Telefono" class="form-control" required />
+                    <input type="text" name="Telefono" class="form-control" />
                 </div>
 
                 <!-- Dirección -->
                 <div class="col-md-6">
                     <label class="form-label">Dirección</label>
-                    <input type="text" name="Direccion" class="form-control" required />
+                    <input type="text" name="Direccion" class="form-control"  />
                 </div>
 
                 <!-- Ciudad -->
                 <div class="col-md-6">
                     <label class="form-label">Ciudad</label>
-                    <input type="text" name="Ciudad" class="form-control" required />
+                    <input type="text" name="Ciudad" class="form-control"  />
                 </div>
 
                 <!-- Código Postal -->
                 <div class="col-md-6">
                     <label class="form-label">Código Postal</label>
-                    <input type="text" name="CP" class="form-control" required />
+                    <input type="text" name="CP" class="form-control"  />
                 </div>
 
                 <!-- Mensajes de validación -->

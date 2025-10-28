@@ -12,6 +12,9 @@ namespace TiendaOnline.Areas.Publica.Models
 
         public string usuarioExistente { get; set; } = "";
 
+        public string telefonoComprobacion { get; set; } = "";
+
+
         //funcion que devuelve true si los parámetros son correctos
         public bool IsValid()
         {
