@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using System.Data;
 using TiendaOnline.Areas.Publica.Models;
+using TiendaOnline.Entidades;
 
 namespace TiendaOnline.Areas.Publica.Controllers
 {
     [Area("Publica")]
     [Route("")]
+
 
     public class HomeController : Controller
     {
@@ -21,6 +25,8 @@ namespace TiendaOnline.Areas.Publica.Controllers
             };
             return View(modelo);
         }
+
+   
 
         // Funcion novedades para mostrar productos nuevos, en este caso todos son nuevos
         [Route("novedades")]

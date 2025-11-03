@@ -1,0 +1,14 @@
+﻿body {
+
+}
+.cuadro-producto {
+    transform: scale(0.9); /* Reduce el tamaño general */
+}
+
+
+.cuadro-producto .card {
+        max-width: 350px;
+        margin: auto;
+        padding: 20px
+}
+

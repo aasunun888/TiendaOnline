@@ -9,7 +9,6 @@
   <ItemGroup>
     <Folder Include="Areas\Administracion\Models\" />
     <Folder Include="Areas\Administracion\Views\" />
-    <Folder Include="Entidades\" />
   </ItemGroup>
 
   <ItemGroup>

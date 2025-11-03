@@ -1,0 +1,89 @@
+﻿@using TiendaOnline.Areas.Publica.Models
+@using TiendaOnline.Entidades
+@model ProductoViewModel
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/producto.css" />
+}
+
+
+<!--<div class="container-fluid">
+    <div class="h2">Productos</div>
+    <div class="d-inline-flex">
+
+        @@/*foreach (Producto producto in Model.ListadoProductos)
+        {
+            <div class="post-preview">
+                <a asp-area="Publica" asp-controller="Home" asp-action="Buscar" asp-route-id="@@producto.Id">
+                    <h3 class="post-title">@@producto.Nombre</h3>
+                    <h4 class="post-subtitle">@@producto.Descripcion</h4>
+                    <img src="@@producto.ImagenUrl" alt="Imagen del producto" />
+                </a>
+                <p class="post-meta">Publicado el @@producto.FechaCreacion</p>
+            </div>
+        }*/
+
+
+    </div>
+</div> -->
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Filtros -->
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Filtrar productos</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-controller="Productos" asp-action="FiltrarPost">
+                        <div class="mb-3">
+                            <label class="form-label">Categoría</label>
+                            <select class="form-select" name="categoriaId">
+                                <option value="">Todas</option>
+                                <option value="1">Camisetas</option>
+                                <option value="2">Pantalones</option>
+                                <option value="3">Sudaderas</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Talla</label>
+                            <select class="form-select" name="talla">
+                                <option value="">Todas</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Precio máximo</label>
+                            <input type="number" class="form-control" name="precioMax" placeholder="Ej: 60">
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">Aplicar filtros</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div class="col-md-9">
+            <div class="row row-cols-1 row-cols-md-3 g-5">
+                @foreach (var producto in Model.ListadoProductos)
+                {
+                    <div class="col cuadro-producto">
+                        <div class="card h-100">
+                            <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
+                            <div class="card-body">
+                                <h5 class="card-title">@producto.Nombre</h5>
+                                <p class="fw-bold">@producto.Precio.ToString("C")</p>
+                            </div>
+                            
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
