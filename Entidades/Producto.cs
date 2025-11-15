@@ -12,5 +12,8 @@
         public string ImagenUrl { get; set; } = "";
         public DateTime FechaCreacion { get; set; }
 
+
+        // Propiedad calculada
+        public string CategoriaNombre { get; set; } = "";
     }
 }

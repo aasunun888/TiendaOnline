@@ -23,6 +23,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                 Descripcion = "¡Vístete con confianza y destaca en cada ocasión!.",
                 ImagenUrl = "/images/51f7191bd47f34a131a3aa1d766b71ef.jpg"
             };
+
             return View(modelo);
         }
 
@@ -33,6 +34,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
         public ActionResult NovedadesGet(int id)
         {
+            ViewBag.Breadcrumb = "Home / Novedades"; //ruta miga de pan
 
             return View();
         }
@@ -42,6 +44,8 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
         public ActionResult About()
         {
+            ViewBag.Breadcrumb = "Home / Sobre Nosotros"; //ruta miga de pan
+
             return View();
         }
 

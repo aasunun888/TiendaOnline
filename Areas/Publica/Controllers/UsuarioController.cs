@@ -45,6 +45,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
             }
 
             LoginViewModel comprobar = new();
+            ViewBag.Breadcrumb = "Home / Iniciar Sesión"; //ruta miga de pan
 
             return View("Login",comprobar);
         }
@@ -188,6 +189,8 @@ namespace TiendaOnline.Areas.Publica.Controllers
         public IActionResult RegistroView()
         {
             LoginViewModel CredencialesUsuario = new();
+            ViewBag.Breadcrumb = "Home / Registrar"; //ruta miga de pan
+
             return View("Registrar", CredencialesUsuario);
         }
 

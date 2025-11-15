@@ -66,6 +66,9 @@ namespace TiendaOnline.Areas.Publica.Controllers
             {
                 Console.WriteLine(ex.Message);
             }
+
+            ViewBag.Breadcrumb = "Home / Buscar"; //ruta miga de pan
+
             return View(Producto);
 
 
@@ -136,9 +139,77 @@ namespace TiendaOnline.Areas.Publica.Controllers
             {
                 Console.WriteLine(ex.Message);
             }
-
             return View("Buscar", Producto); // Reutiliza la misma vista
 
+        }
+
+        /*Función para mostrar el detalle de un producto en base a su Id
+          retorna la vista con el producto seleccionado
+          Parametro id: Id del producto a mostrar
+         */
+        [Route("productos/detalle/{id}")]
+        public ActionResult Detalle(int id)
+        {
+            Producto productoSeleccionado = null;
+            string conexion = "Server=DESKTOP-RODNH5U\\SQLEXPRESS;Database=StreetSize;Trusted_Connection=True;TrustServerCertificate=True;";
+
+            string query = @"SELECT p.Id, p.Nombre, p.Descripcion, p.Precio, p.Color, p.ImagenUrl, 
+                        p.CategoriaId, p.FechaCreacion,
+                        c.Nombre AS CategoriaNombre
+                 FROM Productos p
+                 INNER JOIN Categorias c ON p.CategoriaId = c.Id
+                 WHERE p.Id = @Id";
+
+            try
+            {
+                        using (SqlConnection conn = new SqlConnection(conexion))
+                        {
+                            conn.Open();
+
+                            using (SqlCommand cmd = new SqlCommand(query, conn))
+                            {
+                                cmd.Parameters.AddWithValue("@Id", id);
+
+                                using (SqlDataReader reader = cmd.ExecuteReader())
+                                {
+                                    if (reader.Read())
+                                    {
+                                        productoSeleccionado = new Producto
+                                        {
+                                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                            Nombre = reader["Nombre"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Nombre")),
+                                            Descripcion = reader["Descripcion"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Descripcion")),
+                                            Precio = reader.GetDecimal(reader.GetOrdinal("Precio")),
+                                            Color = reader["Color"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Color")),
+                                            ImagenUrl = reader["ImagenUrl"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("ImagenUrl")),
+                                            CategoriaId = reader.GetInt32(reader.GetOrdinal("CategoriaId")),
+                                            FechaCreacion = reader["FechaCreacion"] == DBNull.Value ? DateTime.Now : reader.GetDateTime(reader.GetOrdinal("FechaCreacion"))
+                                        };
+
+                                        productoSeleccionado.CategoriaNombre = reader["CategoriaNombre"].ToString();
+
+                            }
+                        }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
+                    if (productoSeleccionado == null)
+                    {
+                        return HttpNotFound(); // Si no existe el producto, devolvemos 404
+                    }
+            ViewBag.Breadcrumb = $"Home / Producto / {productoSeleccionado.Nombre}"; //ruta miga de pan
+            return View("DetalleProducto", productoSeleccionado);
+                }
+
+        /*Metodo autogenerado para errores 404*/
+        private ActionResult HttpNotFound()
+        {
+            throw new NotImplementedException();
         }
     }
 }

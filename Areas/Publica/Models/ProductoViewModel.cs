@@ -14,17 +14,8 @@ namespace TiendaOnline.Areas.Publica.Models
         public double precio { get; set; }
         public string color { get; set; } = "";
 
-
-        /*
-            Funcion para descubrir la categoría del producto en base a su Id de categoría       
-        
-         public string DescubrirCategoria(int Id)
-        {
-
-        }
-
-         */
-
+     
+      
 
     }
 }

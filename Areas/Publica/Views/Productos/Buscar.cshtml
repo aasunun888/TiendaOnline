@@ -73,14 +73,15 @@
                 @foreach (var producto in Model.ListadoProductos)
                 {
                     <div class="col cuadro-producto">
-                        <div class="card h-100">
-                            <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
-                            <div class="card-body">
-                                <h5 class="card-title">@producto.Nombre</h5>
-                                <p class="fw-bold">@producto.Precio.ToString("C")</p>
+                        <a href="@Url.Action("Detalle", "Productos", new { id = producto.Id })" style="text-decoration: none; color: inherit;">
+                            <div class="card h-100">
+                                <img src="@producto.ImagenUrl" class="card-img-top" alt="@producto.Nombre">
+                                <div class="card-body">
+                                    <h5 class="card-title">@producto.Nombre</h5>
+                                    <p class="fw-bold">@producto.Precio.ToString("C")</p>
+                                </div>
                             </div>
-                            
-                        </div>
+                        </a>
                     </div>
                 }
             </div>
