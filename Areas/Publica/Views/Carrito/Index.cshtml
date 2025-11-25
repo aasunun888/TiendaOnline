@@ -1,0 +1,34 @@
+﻿@using TiendaOnline.Entidades
+@model TiendaOnline.Areas.Publica.Models.CarritoViewModel
+
+<h2>Mi Carrito</h2>
+
+@if (Model?.carrito != null && Model.carrito.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var producto in Model.carrito)
+            {
+                <tr>
+                    <td>@producto.Nombre</td>
+                    <td>@producto.Precio.ToString("C")</td>
+                    <td>
+                        @Html.ActionLink("Eliminar", "Eliminar", new { productoId = producto.Id }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No tienes productos en el carrito.</p>
+}
+
