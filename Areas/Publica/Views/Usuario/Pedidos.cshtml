@@ -1,0 +1,36 @@
+﻿@model TiendaOnline.Areas.Publica.Models.PedidosViewModel
+
+@{
+    Layout = "_Layout";
+}
+
+<h2>Mis Pedidos</h2>
+
+@if (Model.ListadoPedidos == null || !Model.ListadoPedidos.Any())
+{
+    <p>No tienes pedidos todavía.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.ListadoPedidos)
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td>@p.FechaCreacion.ToString("g")</td>
+                    <td>@p.Total.ToString("C")</td>
+                    <td><a href="@Url.Action("Detalle", "Pedidos", new { area = "Publica", id = p.Id })">Ver</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

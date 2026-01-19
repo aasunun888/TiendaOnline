@@ -1,34 +1,96 @@
 ﻿@using TiendaOnline.Entidades
 @model TiendaOnline.Areas.Publica.Models.CarritoViewModel
 
-<h2>Mi Carrito</h2>
+@section styles{
+    <link href="~/css/Carrito/style.css" rel="stylesheet" />
+}
 
-@if (Model?.carrito != null && Model.carrito.Any())
+<h2 class="titulo-carrito">Mi Carrito</h2>
+
+@if (Model.Items.Any())
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var producto in Model.carrito)
-            {
-                <tr>
-                    <td>@producto.Nombre</td>
-                    <td>@producto.Precio.ToString("C")</td>
-                    <td>
-                        @Html.ActionLink("Eliminar", "Eliminar", new { productoId = producto.Id }, new { @class = "btn btn-danger btn-sm" })
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="contenedor-carrito">
+        <!-- Sección productos -->
+        <section class="seccion-productos">
+            <table class="tabla-carrito">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Color</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@item.Producto.ImagenUrl" alt="@item.Producto.Nombre"
+                                     class="imagen-producto-pequena" />
+                            </td>
+                            <td>@item.Producto.Nombre</td>
+                            <td>@item.Producto.Color</td>
+                            <td>
+                                <div class="control-cantidad">
+                                    <a asp-controller="Carrito" asp-action="Restar"
+                                       asp-route-usuarioId="@item.CarritoId"
+                                       asp-route-productoId="@item.ProductoId"
+                                       class="boton-cantidad">-</a>
+
+                                    <span class="cantidad-actual">@item.Cantidad</span>
+
+                                    <a asp-controller="Carrito" asp-action="Agregar"
+                                       asp-route-productoId="@item.ProductoId"
+                                       class="boton-cantidad">+</a>
+                                </div>
+                            </td>
+                            <td>@item.Producto.Precio.ToString("C")</td>
+                            <td>@((item.Producto.Precio* item.Cantidad).ToString("C"))</td>
+                            <td>
+                                <a asp-controller="Carrito" asp-action="Eliminar"
+                                   asp-route-productoId="@item.ProductoId"
+                                   class="boton-eliminar">Eliminar</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Sección resumen -->
+        <section class="seccion-resumen">
+            <div class="tarjeta-resumen">
+                <h4 class="resumen-titulo">Resumen del pedido</h4>
+
+                <ul class="lista-resumen">
+                    @foreach (var item in Model.Items)
+                    {
+                        <li class="linea-resumen">
+                            <span class="cantidad-resumen">x @item.Cantidad</span>
+                            <span class="nombre-resumen">@item.Producto.Nombre</span>
+                            <span class="detalle-resumen">Color: @item.Producto.Color</span>
+                        </li>
+                    }
+                </ul>
+
+                <div class="totales-resumen">
+                    <p><strong>Total productos:</strong> @Model.Items.Sum(i => i.Cantidad)</p>
+                    <p><strong>Total a pagar:</strong> @Model.Items.Sum(i => i.Producto.Precio * i.Cantidad).ToString("C")</p>
+                </div>
+
+                <div class="acciones-resumen">
+                    <a asp-controller="Carrito" asp-action="Checkout" class="boton-principal">Finalizar compra</a>
+                </div>
+            </div>
+        </section>
+
+    </div>
 }
 else
 {
     <p>No tienes productos en el carrito.</p>
 }
-

@@ -4,7 +4,6 @@ namespace TiendaOnline.Areas.Publica.Models
 {
     public class CarritoViewModel
     {
-        public List<Producto> carrito { get; set; } = new List<Producto>();
-
+        public List<CarritoItem> Items { get; set; } = new List<CarritoItem>();
     }
 }

@@ -1,0 +1,107 @@
+﻿@model TiendaOnline.Areas.Publica.Models.PedidosViewModel
+
+@{
+    Layout = "_Layout";
+    ViewBag.Title = $"Pedido #{Model.PedidoSeleccionado?.Id}";
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/Pedidos/detalle.css" />
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-0">Pedido #@Model.PedidoSeleccionado?.Id</h1>
+            <small class="text-muted">Fecha: @Model.PedidoSeleccionado?.FechaCreacion.ToString("g")</small>
+        </div>
+        <a asp-area="Publica" asp-controller="Pedidos" asp-action="Index" class="btn btn-outline-secondary">Volver a Mis pedidos</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left: detalles del pedido (lista de productos) -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Artículos comprados</h5>
+
+                    @if (Model.PedidoSeleccionado?.Items == null || !Model.PedidoSeleccionado.Items.Any())
+                    {
+                        <p class="text-muted">Este pedido no tiene artículos.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:90px;"></th>
+                                        <th>Producto</th>
+                                        <th>Talla</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th class="text-end">Precio</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.PedidoSeleccionado.Items)
+                                    {
+                                        <tr class="pedido-item-row">
+                                            <td>
+                                                <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/placeholder-product.png" : item.ImagenUrl)"
+                                                     alt="@item.ProductoNombre"
+                                                     class="img-fluid rounded producto-miniatura" />
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold">@item.ProductoNombre</div>
+                                                @* opcional: mostrar descripción corta si existe *@
+                                            </td>
+                                            <td>@(string.IsNullOrEmpty(item.Talla) ? "-" : item.Talla)</td>
+                                            <td class="text-center">@item.Cantidad</td>
+                                            <td class="text-end">@item.Precio.ToString("C")</td>
+                                            <td class="text-end">@((item.Precio * item.Cantidad).ToString("C"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: resumen y datos del pedido -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="mb-3">Resumen del pedido</h6>
+
+                    <dl class="row small mb-0">
+                        <dt class="col-6">Subtotal</dt>
+                        <dd class="col-6 text-end">
+                            @{
+                                var subtotal = Model.PedidoSeleccionado?.Items?.Sum(i => (i.Precio * i.Cantidad)) ?? 0m;
+                            }
+                            @subtotal.ToString("C")
+                        </dd>
+
+                        <dt class="col-6">Envío</dt>
+                        <dd class="col-6 text-end">--</dd>
+
+                        <dt class="col-6">Total</dt>
+                        <dd class="col-6 text-end fw-bold">@Model.PedidoSeleccionado?.Total.ToString("C")</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-2">Información del comprador</h6>
+                    @* Si quieres, puedes mostrar más datos del usuario aquí si están disponibles en el VM *@
+                    <p class="mb-1"><strong>Usuario:</strong> @User.Identity?.Name</p>
+                    <p class="mb-0"><small class="text-muted">Los datos de envío y contacto aparecen en el detalle del pedido.</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

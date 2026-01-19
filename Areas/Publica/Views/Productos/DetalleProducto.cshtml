@@ -1,40 +1,81 @@
-﻿@using TiendaOnline.Entidades
+﻿@model TiendaOnline.Entidades.Producto
+@using TiendaOnline.Entidades
 
 @{
     ViewBag.Title = "Detalle del Producto";
 }
-@section styles{
+@section styles {
     <link href="~/css/Producto/detalle.css" rel="stylesheet" />
 }
 
 <div class="container mt-5">
     <div class="row align-items-center">
+        <!-- Imagen del producto -->
         <div class="col-md-6">
-            <img src="@Model.ImagenUrl" alt="@Model.Nombre" class="img-fluid rounded shadow producto-imagen" />
+            <img src="@Model.ImagenUrl" alt="@Model.Nombre"
+                 class="img-fluid rounded shadow producto-imagen" />
         </div>
+
+        <!-- Información del producto -->
         <div class="col-md-6 d-flex flex-column justify-content-center producto-info">
             <h2 class="producto-titulo">@Model.Nombre</h2>
             <p class="producto-precio"><strong>Precio:</strong> @Model.Precio.ToString("C")</p>
             <p><strong>Color:</strong> @Model.Color</p>
-
             <p class="producto-descripcion">@Model.Descripcion</p>
-         
 
-            <!-- Cantidad -->
-            <div class="mb-3">
-                <label for="cantidad"><strong>Cantidad:</strong></label>
-                <input type="number" id="cantidad" name="cantidad" value="1" min="1" class="form-control w-25 mx-auto" />
-            </div>
+            <!-- Form que incluye talla, cantidad y botón -->
+            <form asp-area="Publica"
+                  asp-controller="Carrito"
+                  asp-action="Agregar"
+                  method="post"
+                  onsubmit="return validarSeleccionTalla();"
+                  class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productoId" value="@Model.Id" />
 
-            <p><strong>Categoría:</strong> @Model.CategoriaNombre</p>
-            <p><small>Fecha de creación: @Model.FechaCreacion.ToShortDateString()</small></p>
-            <div class="mt-4">
-                <a href="@Url.Action("Buscar", "Productos")" class="btn btn-secondary me-2">Volver al catálogo</a>
-                <button asp-area="Publica" asp-controller="Carrito" asp-action="Agregar"
-                        asp-route-productoId="@Model.Id" class="btn btn-primary">
-                    Añadir al carrito
-                </button>
-            </div>
+                <!-- Selección de talla dinámica -->
+                <div class="mb-3">
+                    <label for="talla"><strong>Talla:</strong></label>
+                    <select id="talla" name="talla" class="form-control w-50 mx-auto" required>
+                        <option value="">-- Selecciona una talla --</option>
+                        @foreach (var tallaProd in Model.TallasProducto)
+                        {
+                            <option value="@tallaProd.Talla" disabled="@(tallaProd.Stock == 0)">
+                                @tallaProd.Talla @(tallaProd.Stock == 0 ? "(Sin stock)" : "")
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Cantidad -->
+                <div class="mb-3">
+                    <label for="cantidad"><strong>Cantidad:</strong></label>
+                    <input type="number" id="cantidad" name="cantidad" value="1" min="1"
+                           class="form-control w-25 mx-auto" required />
+                </div>
+
+                <p><strong>Categoría:</strong> @Model.CategoriaNombre</p>
+                <p><small>Fecha de creación: @Model.FechaCreacion.ToShortDateString()</small></p>
+
+                <!-- Botones de acción -->
+                <div class="mt-4">
+                    <a href="@Url.Action("Buscar", "Productos")"
+                       class="btn btn-secondary me-2">Volver al catálogo</a>
+
+                    <button type="submit" class="btn btn-primary">Añadir al carrito</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<script>
+    function validarSeleccionTalla() {
+        const talla = document.getElementById("talla").value;
+        if (!talla) {
+            alert("Por favor selecciona una talla antes de añadir al carrito.");
+            return false;
+        }
+        return true;
+    }
+</script>

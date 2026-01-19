@@ -15,5 +15,8 @@
 
         // Propiedad calculada
         public string CategoriaNombre { get; set; } = "";
+
+        // Relación con tallas
+        public List<TallasProducto> TallasProducto { get; set; } = new List<TallasProducto>();
     }
 }

@@ -153,58 +153,85 @@ namespace TiendaOnline.Areas.Publica.Controllers
             Producto productoSeleccionado = null;
             string conexion = "Server=DESKTOP-RODNH5U\\SQLEXPRESS;Database=StreetSize;Trusted_Connection=True;TrustServerCertificate=True;";
 
-            string query = @"SELECT p.Id, p.Nombre, p.Descripcion, p.Precio, p.Color, p.ImagenUrl, 
-                        p.CategoriaId, p.FechaCreacion,
-                        c.Nombre AS CategoriaNombre
-                 FROM Productos p
-                 INNER JOIN Categorias c ON p.CategoriaId = c.Id
-                 WHERE p.Id = @Id";
+            string queryProducto = @"SELECT p.Id, p.Nombre, p.Descripcion, p.Precio, p.Color, p.ImagenUrl, 
+                                    p.CategoriaId, p.FechaCreacion,
+                                    c.Nombre AS CategoriaNombre
+                             FROM Productos p
+                             INNER JOIN Categorias c ON p.CategoriaId = c.Id
+                             WHERE p.Id = @Id";
+
+            string queryTallas = @"SELECT Id, ProductoId, Talla, Stock
+                           FROM TallasProducto
+                           WHERE ProductoId = @Id";
 
             try
             {
-                        using (SqlConnection conn = new SqlConnection(conexion))
+                using (var conn = new SqlConnection(conexion))
+                {
+                    conn.Open();
+
+                    using (var cmd = new SqlCommand(queryProducto, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", id);
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            conn.Open();
-
-                            using (SqlCommand cmd = new SqlCommand(query, conn))
+                            if (reader.Read())
                             {
-                                cmd.Parameters.AddWithValue("@Id", id);
-
-                                using (SqlDataReader reader = cmd.ExecuteReader())
+                                productoSeleccionado = new Producto
                                 {
-                                    if (reader.Read())
-                                    {
-                                        productoSeleccionado = new Producto
-                                        {
-                                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                            Nombre = reader["Nombre"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Nombre")),
-                                            Descripcion = reader["Descripcion"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Descripcion")),
-                                            Precio = reader.GetDecimal(reader.GetOrdinal("Precio")),
-                                            Color = reader["Color"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Color")),
-                                            ImagenUrl = reader["ImagenUrl"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("ImagenUrl")),
-                                            CategoriaId = reader.GetInt32(reader.GetOrdinal("CategoriaId")),
-                                            FechaCreacion = reader["FechaCreacion"] == DBNull.Value ? DateTime.Now : reader.GetDateTime(reader.GetOrdinal("FechaCreacion"))
-                                        };
-
-                                        productoSeleccionado.CategoriaNombre = reader["CategoriaNombre"].ToString();
-
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    Nombre = reader["Nombre"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Nombre")),
+                                    Descripcion = reader["Descripcion"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Descripcion")),
+                                    Precio = reader["Precio"] == DBNull.Value ? 0m : reader.GetDecimal(reader.GetOrdinal("Precio")),
+                                    Color = reader["Color"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Color")),
+                                    ImagenUrl = reader["ImagenUrl"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("ImagenUrl")),
+                                    CategoriaId = reader["CategoriaId"] == DBNull.Value ? 0 : reader.GetInt32(reader.GetOrdinal("CategoriaId")),
+                                    FechaCreacion = reader["FechaCreacion"] == DBNull.Value ? DateTime.Now : reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
+                                    CategoriaNombre = reader["CategoriaNombre"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("CategoriaNombre"))
+                                };
                             }
-                        }
+                            else
+                            {
+                                return NotFound();
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
 
-                    if (productoSeleccionado == null)
+                    // Obtener tallas y añadirlas a la lista del producto
+                    using (var cmdT = new SqlCommand(queryTallas, conn))
                     {
-                        return HttpNotFound(); // Si no existe el producto, devolvemos 404
+                        cmdT.Parameters.AddWithValue("@Id", id);
+                        using (var reader = cmdT.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var talla = new TallasProducto
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    ProductoId = reader.GetInt32(reader.GetOrdinal("ProductoId")),
+                                    Talla = reader["Talla"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Talla")),
+                                    Stock = reader["Stock"] == DBNull.Value ? 0 : reader.GetInt32(reader.GetOrdinal("Stock"))
+                                };
+                                productoSeleccionado.TallasProducto.Add(talla);
+                            }
+                        }
                     }
-            ViewBag.Breadcrumb = $"Home / Producto / {productoSeleccionado.Nombre}"; //ruta miga de pan
-            return View("DetalleProducto", productoSeleccionado);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            if (productoSeleccionado == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.Breadcrumb = $"Home / Producto / {productoSeleccionado.Nombre}";
+            return View("DetalleProducto", productoSeleccionado);
+        }
+
 
         /*Metodo autogenerado para errores 404*/
         private ActionResult HttpNotFound()

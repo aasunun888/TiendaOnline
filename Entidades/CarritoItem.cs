@@ -9,5 +9,8 @@
 
         public Producto Producto { get; set; }
 
+        // Relación con TallaProducto
+        public int TallaProductoId { get; set; }
+        public TallasProducto TallaProducto { get; set; }
     }
 }

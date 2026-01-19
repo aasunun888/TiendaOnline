@@ -1,0 +1,156 @@
+@model TiendaOnline.Areas.Publica.Models.CheckoutViewModel
+
+@{
+    ViewBag.Title = "Checkout";
+}
+@section styles {
+    <link href="~/css/Carrito/style.css" rel="stylesheet" />
+}
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Hemisferio izquierdo: datos personales / dirección / método de pago -->
+        <div class="col-md-7">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <strong>Datos personales</strong>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Finalizar" asp-controller="Carrito" asp-area="Publica" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="Usuario.Id" value="@Model.Usuario.Id" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre</label>
+                                <input class="form-control" name="Usuario.Nombre" value="@Model.Usuario.Nombre" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellido</label>
+                                <input class="form-control" name="Usuario.Apellido" value="@Model.Usuario.Apellido" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input class="form-control" name="Usuario.Email" value="@Model.Usuario.Email" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono (opcional)</label>
+                                <input class="form-control" name="Usuario.Telefono" value="@Model.Usuario.Telefono" />
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <h6>Dirección de envío</h6>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Dirección</label>
+                                <input class="form-control" required name="Usuario.Direccion" value="@Model.Usuario.Direccion" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ciudad</label>
+                                <input class="form-control" required name="Usuario.Ciudad" value="@Model.Usuario.Ciudad" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Código Postal</label>
+                                <input class="form-control" required name="Usuario.CodigoPostal" value="@Model.Usuario.CodigoPostal" />
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <h6>Método de pago</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="MetodoPagoSeleccionado" id="mp_tarjeta" value="Tarjeta" checked />
+                                    <label class="form-check-label" for="mp_tarjeta">Tarjeta bancaria</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="MetodoPagoSeleccionado" id="mp_bizum" value="Bizum" />
+                                    <label class="form-check-label" for="mp_bizum">Bizum</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="MetodoPagoSeleccionado" id="mp_paypal" value="PayPal" />
+                                    <label class="form-check-label" for="mp_paypal">PayPal</label>
+                                </div>
+
+                                <!-- Campos de tarjeta (opcional, solo UI) -->
+                                <div id="tarjetaCampos" class="mt-3">
+                                    <div class="row g-2">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Número de tarjeta</label>
+                                            <input class="form-control" name="TarjetaNumero" placeholder="XXXX XXXX XXXX XXXX" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">CVV</label>
+                                            <input class="form-control" name="TarjetaCVV" placeholder="CVV" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4 d-flex justify-content-between">
+                                <a asp-controller="Carrito" asp-action="Index" class="btn btn-outline-secondary">Volver al carrito</a>
+                                <button type="submit" class="btn btn-dark">Finalizar compra</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hemisferio derecho: resumen del pedido -->
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <strong>Resumen del pedido</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.Carrito?.Items?.Any() ?? false)
+                    {
+                        <ul class="list-group mb-3">
+                            @foreach (var item in Model.Carrito.Items)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <img src="@item.Producto?.ImagenUrl" alt="@item.Producto?.Nombre" style="width:50px;height:50px;object-fit:cover;" class="me-2" />
+                                        <strong>@item.Producto?.Nombre</strong><br />
+                                        <small>Talla: @item.TallaProducto?.Talla</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>@(item.Producto?.Precio.ToString("C"))</div>
+                                        <small>x @item.Cantidad</small>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+
+                        <div class="d-flex justify-content-between">
+                            <div>Subtotal</div>
+                            <div>@Model.Subtotal.ToString("C")</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Total</div>
+                            <div class="fw-bold">@Model.Total.ToString("C")</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>Tu carrito está vacío.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        // Mostrar/ocultar campos de tarjeta según método seleccionado
+        document.querySelectorAll('input[name="MetodoPagoSeleccionado"]').forEach(r => {
+            r.addEventListener('change', function () {
+                document.getElementById('tarjetaCampos').style.display = this.value === 'Tarjeta' ? 'block' : 'none';
+            });
+        });
+        // Inicializar estado
+        document.getElementById('tarjetaCampos').style.display = document.getElementById('mp_tarjeta').checked ? 'block' : 'none';
+    </script>
+}

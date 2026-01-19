@@ -1,6 +1,6 @@
 ﻿namespace TiendaOnline.Entidades
 {
-    public class TallaProducto
+    public class TallasProducto
     {
         public int Id { get; set; }
         public int ProductoId { get; set; }

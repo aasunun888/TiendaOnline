@@ -1,0 +1,68 @@
+﻿@model TiendaOnline.Areas.Publica.Models.PerfilViewModel
+
+@{
+    ViewBag.Title = "Mi Perfil";
+}
+
+<div class="profile-container">
+    <h2 class="profile-title">Datos personales
+    </h2>
+
+    @if (TempData["PerfilMensaje"] != null)
+    {
+        <div class="alert alert-success">@TempData["PerfilMensaje"]</div>
+    }
+    @if (TempData["PerfilError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["PerfilError"]</div>
+    }
+
+    <form class="profile-form" asp-action="Actualizar" asp-controller="Perfil" method="post" asp-area="Publica">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Usuario.Id" value="@Model.Usuario.Id" />
+
+        <div class="form-group">
+            <label>Nombre</label>
+            <input class="form-control" name="Usuario.Nombre" value="@Model.Usuario.Nombre" />
+        </div>
+
+        <div class="form-group">
+            <label>Apellido</label>
+            <input class="form-control" name="Usuario.Apellido" value="@Model.Usuario.Apellido" />
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input class="form-control" name="Usuario.Email" value="@Model.Usuario.Email" readonly />
+        </div>
+
+        <div class="form-group">
+            <label>Teléfono</label>
+            <input class="form-control" name="Usuario.Telefono" value="@Model.Usuario.Telefono" />
+        </div>
+        <br />
+        <!--DIRECCION DE ENVÍO-->
+        <h2 class="profile-title">
+            Dirección
+        </h2>
+        <div class="row w-50">
+            <div class="form-group col-4">
+                <label>Dirección</label>
+                <input class="form-control " name="Usuario.Direccion" value="@Model.Usuario.Direccion" />
+            </div>
+
+            <div class="form-group col-4">
+                <label>Ciudad</label>
+                <input class="form-control " name="Usuario.Ciudad" value="@Model.Usuario.Ciudad" />
+            </div>
+
+            <div class="form-group col-4">
+                <label>Código Postal</label>
+                <input class="form-control " name="Usuario.CodigoPostal" value="@Model.Usuario.CodigoPostal" />
+            </div>
+        </div>
+       
+        <br />
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+    </form>
+</div>

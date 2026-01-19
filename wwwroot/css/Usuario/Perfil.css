@@ -1,0 +1,36 @@
+﻿
+/* Estilos para la página de perfil */
+.profile-container {
+    max-width: 900px;
+    margin: 1.5rem auto;
+    padding: 1.25rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.profile-title {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.profile-form .form-group {
+    margin-bottom: 0.9rem;
+}
+
+.profile-form label {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.profile-form .form-control[readonly] {
+    background-color: #f8f9fa;
+}
+
+@media (max-width: 576px) {
+    .profile-container {
+        padding: 0.75rem;
+        margin: 1rem;
+    }
+}
