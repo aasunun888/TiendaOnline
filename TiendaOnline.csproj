@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Administracion\Models\" />
-    <Folder Include="Areas\Administracion\Views\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="wwwroot\images\51f7191bd47f34a131a3aa1d766b71ef.jpg" />
     <None Include="wwwroot\images\Captura de pantalla 2025-10-07 144805.png" />
   </ItemGroup>

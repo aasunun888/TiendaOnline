@@ -43,8 +43,11 @@
 
                                     <span class="cantidad-actual">@item.Cantidad</span>
 
-                                    <a asp-controller="Carrito" asp-action="Agregar"
-                                       asp-route-productoId="@item.ProductoId"
+                                    <!-- Cambia la llamada + para pasar el id de la talla del item -->
+                                    <a asp-controller="Carrito" 
+                                       asp-action="Agregar" 
+                                       asp-route-productoId="@item.ProductoId" 
+                                       asp-route-tallaProductoId="@item.TallaProductoId"
                                        class="boton-cantidad">+</a>
                                 </div>
                             </td>

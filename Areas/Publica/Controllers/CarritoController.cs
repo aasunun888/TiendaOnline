@@ -126,6 +126,88 @@ namespace TiendaOnline.Areas.Publica.Controllers
             return RedirectToAction("Index");
         }
 
+        // Nueva sobrecarga GET para Agregar que comprueba stock antes de incrementar/insertar
+        [Route("Carrito/Agregar")]
+        [HttpGet]
+        public IActionResult Agregar(int productoId, int cantidad = 1, int? tallaProductoId = null)
+        {
+            var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid);
+            if (string.IsNullOrEmpty(usuarioIdClaim))
+                return Redirect("/auth/login");
+            int usuarioId = int.Parse(usuarioIdClaim);
+
+            int tallaId = 0;
+            int stock = 0;
+
+            using (var conn = new SqlConnection(conexion))
+            {
+                conn.Open();
+
+                if (tallaProductoId.HasValue && tallaProductoId.Value > 0)
+                {
+                    // Obtener stock por Id de talla
+                    using (var cmd = new SqlCommand("SELECT Stock FROM TallasProducto WHERE Id = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", tallaProductoId.Value);
+                        var o = cmd.ExecuteScalar();
+                        if (o == null)
+                        {
+                            TempData["Error"] = "Talla no encontrada.";
+                            return RedirectToAction("Index");
+                        }
+                        tallaId = tallaProductoId.Value;
+                        stock = Convert.ToInt32(o);
+                    }
+                }
+                else
+                {
+                    // Si no se pasa tallaProductoId, buscar una talla con stock disponible
+                    using (var cmd = new SqlCommand("SELECT TOP 1 Id, Stock FROM TallasProducto WHERE ProductoId = @prodId AND Stock > 0", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@prodId", productoId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (!reader.Read())
+                            {
+                                TempData["Error"] = "No hay tallas con stock disponibles para este producto.";
+                                return RedirectToAction("Index");
+                            }
+                            tallaId = reader.GetInt32(0);
+                            stock = reader.GetInt32(1);
+                        }
+                    }
+                }
+            }
+
+            // Obtener o crear carrito
+            var carrito = ObtenerCarrito(usuarioId) ?? CrearCarrito(usuarioId);
+
+            // Buscar item por producto + talla
+            var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId && i.TallaProductoId == tallaId);
+
+            // Comprobar stock y actualizar/insertrar
+            if (item != null)
+            {
+                if (stock < item.Cantidad + cantidad)
+                {
+                    TempData["Error"] = "No hay stock suficiente para aumentar la cantidad.";
+                    return RedirectToAction("Index");
+                }
+                ActualizarCantidad(item.Id, item.Cantidad + cantidad);
+            }
+            else
+            {
+                if (stock < cantidad)
+                {
+                    TempData["Error"] = "No hay stock disponible para la talla seleccionada.";
+                    return RedirectToAction("Index");
+                }
+                InsertarItem(carrito.Id, productoId, cantidad, tallaId);
+            }
+
+            return RedirectToAction("Index");
+        }
+
         [Route("Carrito/Restar")]
         [HttpGet]
         public IActionResult Restar(int productoId)
@@ -456,7 +538,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                     {
                         try
                         {
-                            // 1) Insertar Pedido y obtener Id
+                            //Insertar Pedido y obtener Id
                             var insertPedidoSql = @"INSERT INTO Pedidos (UsuarioId, FechaCreacion, Total)
                                                     VALUES (@UsuarioId, GETDATE(), @Total);
                                                     SELECT CAST(SCOPE_IDENTITY() AS INT);";
@@ -471,7 +553,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                             if (nuevoPedidoId == 0)
                                 throw new Exception("No se pudo crear el pedido.");
 
-                            // 2) Por cada item: verificar stock, restar stock e insertar PedidoItem
+                            //Por cada item: verificar stock, restar stock e insertar PedidoItem
                             foreach (var item in carrito.Items)
                             {
                                 if (item.Producto == null)
@@ -519,7 +601,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                                 }
                             }
 
-                            // 3) Vaciar carrito del usuario (borrar CarritoItem)
+                            //Vaciar carrito del usuario (borrar CarritoItem)
                             var deleteItemsSql = @"DELETE CI
                                                    FROM CarritoItem CI
                                                    INNER JOIN Carrito C ON CI.CarritoId = C.Id

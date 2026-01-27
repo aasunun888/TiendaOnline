@@ -85,6 +85,15 @@
                         {
                            
                             <ul class="dropdown-menu menu-usuario">
+                                @* Mostrar enlace a Panel de administrador solo para usuarios en el rol Admin *@
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    <li>
+                                        <a class="dropdown-item di-menu-usuario" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">Panel de administrador</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                }
+
                                 <li><a class="dropdown-item di-menu-usuario" asp-area="Publica" asp-controller="Perfil" asp-action="Index">Perfil</a></li>
                                 <li><a class="dropdown-item di-menu-usuario" asp-area="Publica" asp-controller="Pedidos" asp-action="Index">Pedidos</a></li>
                                 <li><hr class="dropdown-divider" /></li>

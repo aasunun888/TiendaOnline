@@ -1,0 +1,171 @@
+﻿@model TiendaOnline.Areas.Administracion.Models.AdminDashboardViewModel
+
+@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Admin Dashboard";
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/Admin/dashboard.css" asp-append-version="true" />
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar pt-4">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link active" data-target="#tab-productos" href="#" onclick="showTab(event,'productos')">Productos</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" data-target="#tab-categorias" href="#" onclick="showTab(event,'categorias')">Categorías</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" data-target="#tab-usuarios" href="#" onclick="showTab(event,'usuarios')">Usuarios</a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" data-target="#tab-pedidos" href="#" onclick="showTab(event,'pedidos')">Pedidos</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main -->
+        <main class="col-md-10 ms-sm-auto px-4">
+            <div class="pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h4">Panel de administración</h1>
+                <small class="text-muted">Usa la barra lateral para navegar entre secciones</small>
+            </div>
+
+            <!-- Productos -->
+            <section id="productos" class="admin-tab">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Productos</strong>
+                        <div>
+                            <a class="btn btn-sm btn-success" href="/admin/productos/nuevo">Nuevo</a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead class="table-light">
+                                    <tr><th>Id</th><th>Nombre</th><th>Precio</th><th>CategoriaId</th><th>Fecha</th><th></th></tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var p in Model.Productos)
+                                    {
+                                        <tr>
+                                            <td>@p.Id</td>
+                                            <td>@p.Nombre</td>
+                                            <td>@p.Precio.ToString("C")</td>
+                                            <td>@p.CategoriaId</td>
+                                            <td>@p.FechaCreacion.ToShortDateString()</td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary" href="/admin/productos/detalle/@p.Id">Ver</a>
+                                                <a class="btn btn-sm btn-outline-secondary" href="/admin/productos/editar/@p.Id">Editar</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Categorías -->
+            <section id="categorias" class="admin-tab d-none">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between">
+                        <strong>Categorías</strong>
+                        <a class="btn btn-sm btn-success" href="/admin/categorias/nuevo">Nuevo</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Descripción</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var c in Model.Categorias)
+                                {
+                                    <tr>
+                                        <td>@c.Id</td>
+                                        <td>@c.Nombre</td>
+                                        <td>@c.Descripcion</td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-primary" href="/admin/categorias/detalle/@c.Id">Ver</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="/admin/categorias/editar/@c.Id">Editar</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Usuarios -->
+            <section id="usuarios" class="admin-tab d-none">
+                <div class="card mb-4">
+                    <div class="card-header"><strong>Usuarios</strong></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Email</th><th>RolId</th><th>Activo</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var u in Model.Usuarios)
+                                {
+                                    <tr>
+                                        <td>@u.Id</td>
+                                        <td>@u.Nombre @u.Apellido</td>
+                                        <td>@u.Email</td>
+                                        <td>@u.RolId</td>
+                                        <td>@(u.Activo ? "Sí" : "No")</td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-primary" href="/admin/usuarios/detalle/@u.Id">Ver</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="/admin/usuarios/editar-rol/@u.Id">Editar rol</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pedidos -->
+            <section id="pedidos" class="admin-tab d-none">
+                <div class="card mb-4">
+                    <div class="card-header"><strong>Pedidos</strong></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead class="table-light"><tr><th>Id</th><th>UsuarioId</th><th>Fecha</th><th>Total</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var o in Model.Pedidos)
+                                {
+                                    <tr>
+                                        <td>@o.Id</td>
+                                        <td>@o.UsuarioId</td>
+                                        <td>@o.FechaCreacion.ToString("g")</td>
+                                        <td>@o.Total.ToString("C")</td>
+                                        <td><a class="btn btn-sm btn-outline-primary" href="/admin/pedidos/detalle/@o.Id">Ver</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function showTab(e, name){
+            e.preventDefault();
+            document.querySelectorAll('.admin-tab').forEach(s => s.classList.add('d-none'));
+            document.getElementById(name).classList.remove('d-none');
+            document.querySelectorAll('.sidebar .nav-link').forEach(a => a.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+        }
+    </script>
+}

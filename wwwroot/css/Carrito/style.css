@@ -15,11 +15,8 @@
 }
 
 /*RESUMEN*/
-
-/* Sección resumen ocupa 30% */
 .seccion-resumen {
     flex: 0 0 30%;
-   
 }
 .tarjeta-resumen {
     background: #f9f9f9;
@@ -79,9 +76,9 @@
     text-decoration: none;
 }
 
-    .boton-principal:hover {
-        background: #2fa88a;
-    }
+.boton-principal:hover {
+    background: #2fa88a;
+}
 
 /* Tabla */
 .tabla-carrito {
@@ -89,16 +86,16 @@
     border-collapse: collapse;
 }
 
-    .tabla-carrito th, .tabla-carrito td {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        text-align: left;
-    }
+.tabla-carrito th, .tabla-carrito td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
 
-    .tabla-carrito th {
-        background: #f0f0f0;
-        font-weight: bold;
-    }
+.tabla-carrito th {
+    background: #f0f0f0;
+    font-weight: bold;
+}
 
 /* Imagen producto */
 .imagen-producto-pequena {
@@ -116,40 +113,34 @@
     gap: 8px;
 }
 
-
 .cantidad-actual {
     font-weight: bold;
 }
 
-
-
-
-
-
 /* Botones de cantidad */
 .boton-cantidad {
     display: inline-block;
-    padding: 12px 18px; /* más espacio interno */
-    font-size: 18px; /* texto más grande */
-    font-weight: bold; /* texto más marcado */
-    border: 2px solid #ccc; /* borde más visible */
-    border-radius: 8px; /* esquinas redondeadas */
-    background: #f0f0f0; /* fondo claro */
-    color: #333; /* texto oscuro */
+    padding: 12px 18px;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background: #f0f0f0;
+    color: #333;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.2s ease, transform 0.1s ease;
 }
 
-    .boton-cantidad:hover {
-        background: #e0e0e0;
-    }
+.boton-cantidad:hover {
+    background: #e0e0e0;
+}
 
-    .boton-cantidad:active {
-        transform: scale(0.95);
-    }
+.boton-cantidad:active {
+    transform: scale(0.95);
+}
 
-/* Botón eliminar más grande */
+/* Botón eliminar */
 .boton-eliminar {
     display: inline-block;
     padding: 12px 18px;
@@ -162,11 +153,201 @@
     transition: background 0.2s ease, transform 0.1s ease;
 }
 
-    .boton-eliminar:hover {
-        background: #c9302c;
+.boton-eliminar:hover {
+    background: #c9302c;
+}
+
+.boton-eliminar:active {
+    transform: scale(0.95);
+}
+
+/* ============================
+   TARJETA BANCO (scoped a #tarjetaCampos)
+   ============================ */
+
+/* Contenedor principal (scoped) */
+#tarjetaCampos {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+/* Lateral visual (tarjeta) */
+#tarjetaCampos .lateral {
+    flex: 0 0 40%;
+    min-width: 240px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+/* Central: formulario */
+#tarjetaCampos .central {
+    flex: 1 1 60%;
+    min-width: 260px;
+    padding: 0.5rem;
+}
+
+/* Caja que contiene ambas caras (stack vertical) */
+#tarjetaCampos .contenedor-tarjetas {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Anverso de la tarjeta */
+#tarjetaCampos .tarjeta-adverso {
+    width: 100%;
+    height: 200px;
+    border-radius: 12px;
+    padding: 18px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    background: linear-gradient(90deg, rgba(101,74,254,1) 0%, rgba(167,78,218,1) 50%, rgba(125,143,208,1) 100%);
+    overflow: hidden;
+    position: relative;
+}
+
+/* pequeños controles circulares */
+#tarjetaCampos .btn-adverso,
+#tarjetaCampos .btn-reverso {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.18);
+    margin-right: 8px;
+}
+
+/* Número y estilo */
+#tarjetaCampos #numero-tarjeta {
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 3px;
+    font-size: 1.03rem;
+    margin: 6px 0;
+    word-break: break-word;
+}
+
+/* Info inferior (nombre - fecha) */
+#tarjetaCampos .informacion-tarjeta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    opacity: 0.95;
+}
+
+/* Reverso de la tarjeta */
+#tarjetaCampos .tarjeta-reverso {
+    width: 100%;
+    height: 120px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    padding: 12px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Banda magnética */
+#tarjetaCampos .linea-negra {
+    width: 100%;
+    background-color: #111827;
+    height: 40px;
+    border-radius: 6px;
+}
+
+/* CVC en el reverso */
+#tarjetaCampos .linea-cvc {
+    background-color: #374151;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 40%;
+    margin-left: auto;
+    margin-top: 12px;
+    text-align: right;
+    font-weight: 600;
+}
+
+/* Formularios de la parte derecha (scoped) */
+#tarjetaCampos .formulario-datos {
+    max-width: 520px;
+}
+
+#tarjetaCampos .formulario-datos input[type="text"],
+#tarjetaCampos .formulario-datos input[type="number"] {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    margin: 6px 0 10px 0;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+/* Inputs pequeños (MM / YY) */
+#tarjetaCampos .tamanyo-input-fecha {
+    width: 56px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+/* Botón enviar dentro del formulario de tarjeta */
+#tarjetaCampos .btn-enviar {
+    border-radius: 6px;
+    background-color: #111827;
+    color: white;
+    margin-top: 12px;
+    padding: 10px 16px;
+    width: auto;
+    display: inline-block;
+    border: none;
+}
+
+/* pequeños ajustes visuales */
+#tarjetaCampos p { margin: 0 0 8px 0; font-size: .9rem; color: #6b7280; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    #tarjetaCampos {
+        flex-direction: column;
+        gap: 12px;
     }
 
-    .boton-eliminar:active {
-        transform: scale(0.95);
+    #tarjetaCampos .lateral,
+    #tarjetaCampos .central {
+        min-width: 100%;
+        padding: 0;
     }
 
+    #tarjetaCampos .tarjeta-adverso {
+        height: 170px;
+        padding: 12px;
+    }
+
+    #tarjetaCampos .tarjeta-reverso {
+        height: 110px;
+        padding: 10px;
+    }
+
+    #tarjetaCampos .contenedor-tarjetas {
+        max-width: 100%;
+    }
+
+    #tarjetaCampos .formulario-datos {
+        max-width: 100%;
+    }
+}

@@ -4,7 +4,7 @@
     ViewBag.Title = "Checkout";
 }
 @section styles {
-    <link href="~/css/Carrito/style.css" rel="stylesheet" />
+    <link href="~/css/Carrito/style.css" rel="stylesheet" asp-append-version="true" />
 }
 
 <div class="container my-5">
@@ -77,16 +77,67 @@
                                     <div class="row g-2">
                                         <div class="col-md-8">
                                             <label class="form-label">Número de tarjeta</label>
-                                            <input class="form-control" name="TarjetaNumero" placeholder="XXXX XXXX XXXX XXXX" />
+                                            <input id="numeroTarjeta" class="form-control" name="TarjetaNumero" placeholder="1234-5678-1234-1234" />
+                                            <small id="resultado-validacion-numero" class="text-danger d-block mt-1"></small>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label">CVV</label>
-                                            <input class="form-control" name="TarjetaCVV" placeholder="CVV" />
+                                            <label class="form-label">CVC</label>
+                                            <input id="CVC" class="form-control" name="TarjetaCVV" placeholder="CVV" />
+                                            <small id="resultado-validacion-cvc" class="text-danger d-block mt-1"></small>
+                                        </div>
+
+                                        <div class="col-md-6 mt-2">
+                                            <label class="form-label">Nombre en la tarjeta</label>
+                                            <input id="nombre-input" class="form-control" placeholder="Nombre completo" type="text" name="nombre-dueño">
+                                            <small id="resultado-validacion-nombre" class="text-danger d-block mt-1"></small>
+                                        </div>
+
+                                        <div class="col-md-6 mt-2 d-flex align-items-end">
+                                            <div class="w-100">
+                                                <label class="form-label">Fecha (MM / YY)</label>
+                                                <div class="d-flex gap-2">
+                                                    <input id="mes" class="form-control tamanyo-input-fecha" placeholder="MM" type="text">
+                                                    <input id="anyo" class="form-control tamanyo-input-fecha" placeholder="YY" type="text">
+                                                </div>
+                                                <small id="validacion-fecha" class="text-danger d-block mt-1"></small>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 mt-2">
+                                            <small id="resultado-campos" class="text-danger d-block"></small>
+                                            <!-- HUD visual de tarjeta -->
+                                            <div class="mt-3 d-flex gap-3 align-items-start">
+                                                <div class="lateral">
+                                                    <div class="contenedor-tarjetas">
+                                                        <div class="tarjeta-adverso p-3">
+                                                            <div class="d-flex justify-content-between">
+                                                                <div>
+                                                                    <button type="button" class="btn-adverso"></button>
+                                                                    <button type="button" class="btn-reverso"></button>
+                                                                </div>
+                                                            </div>
+
+                                                            <h4 id="numero-tarjeta" class="mt-3">•••• •••• •••• ••••</h4>
+                                                            <div class="informacion-tarjeta">
+                                                                <small id="nombre-hud">@Model.Usuario.Nombre</small>
+                                                                <small id="fecha-caducidad">--/--</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tarjeta-reverso p-2">
+                                                            <div class="linea-negra mb-2"></div>
+                                                            <div id="cvc-hud" class="linea-cvc">•••</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="central flex-grow-1">
+                                                    <!-- espacio para formulario ya mostrado arriba -->
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
+                                </div> 
+                                
                             <div class="col-12 mt-4 d-flex justify-content-between">
                                 <a asp-controller="Carrito" asp-action="Index" class="btn btn-outline-secondary">Volver al carrito</a>
                                 <button type="submit" class="btn btn-dark">Finalizar compra</button>
@@ -143,14 +194,5 @@
 </div>
 
 @section scripts {
-    <script>
-        // Mostrar/ocultar campos de tarjeta según método seleccionado
-        document.querySelectorAll('input[name="MetodoPagoSeleccionado"]').forEach(r => {
-            r.addEventListener('change', function () {
-                document.getElementById('tarjetaCampos').style.display = this.value === 'Tarjeta' ? 'block' : 'none';
-            });
-        });
-        // Inicializar estado
-        document.getElementById('tarjetaCampos').style.display = document.getElementById('mp_tarjeta').checked ? 'block' : 'none';
-    </script>
+    <script src="~/js/Carrito/checkout.js" asp-append-version="true"></script>
 }

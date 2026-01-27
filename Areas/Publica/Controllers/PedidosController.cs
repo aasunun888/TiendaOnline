@@ -81,7 +81,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
             string queryItems = @"SELECT pi.Id, pi.PedidoId, pi.ProductoId, pi.Cantidad, pi.Precio,
                                          p.Nombre AS ProductoNombre, p.ImagenUrl, tp.Talla, pi.TallaProductoId
-                                  FROM PedidoItems pi
+                                  FROM PedidoItem pi
                                   LEFT JOIN Productos p ON p.Id = pi.ProductoId
                                   LEFT JOIN TallasProducto tp ON tp.Id = pi.TallaProductoId
                                   WHERE pi.PedidoId = @PedidoId";
@@ -116,6 +116,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                         }
                     }
 
+                    // Cargar items del pedido y poblar sus datos (imagen, talla, precio, cantidad, etc.)
                     using (SqlCommand cmdItems = new SqlCommand(queryItems, conn))
                     {
                         cmdItems.Parameters.AddWithValue("@PedidoId", id);
