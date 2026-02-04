@@ -4,7 +4,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using TiendaOnline.Areas.Administracion.Models;
 
-namespace TiendaOnline.Areas.Admin.Controllers
+namespace TiendaOnline.Areas.Administracion.Controllers
 {
     [Area("Administracion")]
     [Route("administracion")]
@@ -13,25 +13,53 @@ namespace TiendaOnline.Areas.Admin.Controllers
     {
         private readonly string conexion = "Server=DESKTOP-RODNH5U\\SQLEXPRESS;Database=StreetSize;Trusted_Connection=True;TrustServerCertificate=True;";
 
+        // Acepta parámetros opcionales para búsqueda por cada pestaña
         [HttpGet("")]
-        public IActionResult Index()
+        public IActionResult Index([FromQuery] string qProductos = null, [FromQuery] string qCategorias = null, [FromQuery] string qUsuarios = null, [FromQuery] string qPedidos = null)
         {
-            var vm = new AdminDashboardViewModel();
+            var vm = new AdminDashboardViewModel
+            {
+                BuscarProductos = qProductos ?? "",
+                BuscarCategorias = qCategorias ?? "",
+                BuscarUsuarios = qUsuarios ?? "",
+                BuscarPedidos = qPedidos ?? ""
+            };
 
             try
             {
                 using var conn = new SqlConnection(conexion);
                 conn.Open();
 
-                // Productos (resumen)
-                using (var cmd = new SqlCommand(@"SELECT TOP 200 Id, Nombre, Precio, CategoriaId, FechaCreacion FROM Productos ORDER BY FechaCreacion DESC", conn))
-                using (var da = new SqlDataAdapter(cmd))
+                // Productos (con búsqueda por id o nombre/descripcion)
                 {
+                    var sql = @"SELECT TOP 200 Id, Nombre, Precio, CategoriaId, FechaCreacion FROM Productos";
+                    using var cmd = new SqlCommand();
+                    cmd.Connection = conn;
+
+                    if (!string.IsNullOrWhiteSpace(vm.BuscarProductos)) //Si no esta null
+                    {
+                        if (int.TryParse(vm.BuscarProductos.Trim(), out int pid)) //Diferenciar si es num(id) o texto(nombre/descripcion)
+                        {
+                            sql += " WHERE Id = @pId OR Nombre LIKE @pLike OR Descripcion LIKE @pLike"; //Agregar condiciones
+                            cmd.Parameters.AddWithValue("@pId", pid);
+                            cmd.Parameters.AddWithValue("@pLike", $"%{vm.BuscarProductos}%");
+                        }
+                        else
+                        {
+                            sql += " WHERE Nombre LIKE @pLike OR Descripcion LIKE @pLike";
+                            cmd.Parameters.AddWithValue("@pLike", $"%{vm.BuscarProductos}%");
+                        }
+                    }
+
+                    sql += " ORDER BY FechaCreacion DESC";
+                    cmd.CommandText = sql;
+
+                    using var da = new SqlDataAdapter(cmd);
                     var dt = new DataTable();
                     da.Fill(dt);
                     foreach (DataRow r in dt.Rows)
                     {
-                        vm.Productos.Add(new ProductSummary
+                        vm.Productos.Add(new ProductoSummary
                         {
                             Id = r.Field<int>("Id"),
                             Nombre = r["Nombre"] == DBNull.Value ? "" : r.Field<string>("Nombre")!,
@@ -42,32 +70,73 @@ namespace TiendaOnline.Areas.Admin.Controllers
                     }
                 }
 
-                // Categorías
-                using (var cmd = new SqlCommand(@"SELECT Id, Nombre, Descripcion FROM Categorias ORDER BY Nombre", conn))
-                using (var da = new SqlDataAdapter(cmd))
+                // Categorías (búsqueda por id o nombre)
                 {
+                    var sql = @"SELECT Id, Nombre FROM Categorias";
+                    using var cmd = new SqlCommand();
+                    cmd.Connection = conn;
+
+                    if (!string.IsNullOrWhiteSpace(vm.BuscarCategorias))//Si no esta null
+                    {
+                        if (int.TryParse(vm.BuscarCategorias.Trim(), out int cid))//Diferenciar si es num(id) o texto(nombre)
+                        {
+                            sql += " WHERE Id = @cId OR Nombre LIKE @cLike";
+                            cmd.Parameters.AddWithValue("@cId", cid);
+                            cmd.Parameters.AddWithValue("@cLike", $"%{vm.BuscarCategorias}%");
+                        }
+                        else
+                        {
+                            sql += " WHERE Nombre LIKE @cLike";
+                            cmd.Parameters.AddWithValue("@cLike", $"%{vm.BuscarCategorias}%");
+                        }
+                    }
+
+                    sql += " ORDER BY Nombre";
+                    cmd.CommandText = sql;
+
+                    using var da = new SqlDataAdapter(cmd);
                     var dt = new DataTable();
                     da.Fill(dt);
                     foreach (DataRow r in dt.Rows)
                     {
-                        vm.Categorias.Add(new CategorySummary
+                        vm.Categorias.Add(new CategoriaSummary
                         {
                             Id = r.Field<int>("Id"),
                             Nombre = r["Nombre"] == DBNull.Value ? "" : r.Field<string>("Nombre")!,
-                            Descripcion = r["Descripcion"] == DBNull.Value ? "" : r.Field<string>("Descripcion")!
                         });
                     }
                 }
 
-                // Usuarios
-                using (var cmd = new SqlCommand(@"SELECT Id, Nombre, Apellido, Email, RolId, Activo, FechaRegistro FROM Usuarios ORDER BY FechaRegistro DESC", conn))
-                using (var da = new SqlDataAdapter(cmd))
+                // Usuarios (búsqueda por id, nombre, apellido, email)
                 {
+                    var sql = @"SELECT Id, Nombre, Apellido, Email, RolId, Activo, FechaRegistro FROM Usuarios";
+                    using var cmd = new SqlCommand();
+                    cmd.Connection = conn;
+
+                    if (!string.IsNullOrWhiteSpace(vm.BuscarUsuarios))//Si no esta null
+                    {
+                        if (int.TryParse(vm.BuscarUsuarios.Trim(), out int uid))//Diferenciar si es num(id) o texto(nombre)
+                        {
+                            sql += " WHERE Id = @uId OR Nombre LIKE @uLike OR Apellido LIKE @uLike OR Email LIKE @uLike";
+                            cmd.Parameters.AddWithValue("@uId", uid);
+                            cmd.Parameters.AddWithValue("@uLike", $"%{vm.BuscarUsuarios}%");
+                        }
+                        else
+                        {
+                            sql += " WHERE Nombre LIKE @uLike OR Apellido LIKE @uLike OR Email LIKE @uLike";
+                            cmd.Parameters.AddWithValue("@uLike", $"%{vm.BuscarUsuarios}%");
+                        }
+                    }
+
+                    sql += " ORDER BY FechaRegistro DESC";
+                    cmd.CommandText = sql;
+
+                    using var da = new SqlDataAdapter(cmd);
                     var dt = new DataTable();
                     da.Fill(dt);
                     foreach (DataRow r in dt.Rows)
                     {
-                        vm.Usuarios.Add(new UserSummary
+                        vm.Usuarios.Add(new UsuarioSummary
                         {
                             Id = r.Field<int>("Id"),
                             Nombre = r["Nombre"] == DBNull.Value ? "" : r.Field<string>("Nombre")!,
@@ -79,15 +148,37 @@ namespace TiendaOnline.Areas.Admin.Controllers
                     }
                 }
 
-                // Pedidos (resumen)
-                using (var cmd = new SqlCommand(@"SELECT TOP 200 Id, UsuarioId, FechaCreacion, Total FROM Pedidos ORDER BY FechaCreacion DESC", conn))
-                using (var da = new SqlDataAdapter(cmd))
+                // Pedidos (búsqueda por id o por usuario (nombre/apellido/email))
                 {
+                    var sql = @"SELECT p.Id, p.UsuarioId, p.FechaCreacion, p.Total
+                                FROM Pedidos p
+                                LEFT JOIN Usuarios u ON u.Id = p.UsuarioId";
+                    using var cmd = new SqlCommand();
+                    cmd.Connection = conn;
+
+                    if (!string.IsNullOrWhiteSpace(vm.BuscarPedidos))//Si no esta null
+                    {
+                        if (int.TryParse(vm.BuscarPedidos.Trim(), out int oid))//Diferenciar si es num(id) o texto(nombre/apellido/email)
+                        {
+                            sql += " WHERE p.Id = @oId";
+                            cmd.Parameters.AddWithValue("@oId", oid);
+                        }
+                        else
+                        {
+                            sql += " WHERE u.Nombre LIKE @oLike OR u.Apellido LIKE @oLike OR u.Email LIKE @oLike";
+                            cmd.Parameters.AddWithValue("@oLike", $"%{vm.BuscarPedidos}%");
+                        }
+                    }
+
+                    sql += " ORDER BY p.FechaCreacion DESC";
+                    cmd.CommandText = sql;
+
+                    using var da = new SqlDataAdapter(cmd);
                     var dt = new DataTable();
                     da.Fill(dt);
                     foreach (DataRow r in dt.Rows)
                     {
-                        vm.Pedidos.Add(new OrderSummary
+                        vm.Pedidos.Add(new PedidoSummary
                         {
                             Id = r.Field<int>("Id"),
                             UsuarioId = r.Field<int>("UsuarioId"),
@@ -99,7 +190,7 @@ namespace TiendaOnline.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-               
+                // log
                 Console.WriteLine(ex.Message);
             }
 

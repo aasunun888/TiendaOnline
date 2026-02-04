@@ -15,43 +15,54 @@
             <div class="position-sticky">
                 <ul class="nav flex-column">
                     <li class="nav-item mb-2">
-                        <a class="nav-link active" data-target="#tab-productos" href="#" onclick="showTab(event,'productos')">Productos</a>
+                        <a class="nav-link active" href="#" onclick="mostrarTab(event,'productos')">Productos</a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" data-target="#tab-categorias" href="#" onclick="showTab(event,'categorias')">Categorías</a>
+                        <a class="nav-link" href="#" onclick="mostrarTab(event,'categorias')">Categorías</a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" data-target="#tab-usuarios" href="#" onclick="showTab(event,'usuarios')">Usuarios</a>
+                        <a class="nav-link" href="#" onclick="mostrarTab(event,'usuarios')">Usuarios</a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" data-target="#tab-pedidos" href="#" onclick="showTab(event,'pedidos')">Pedidos</a>
+                        <a class="nav-link" href="#" onclick="mostrarTab(event,'pedidos')">Pedidos</a>
                     </li>
                 </ul>
             </div>
         </nav>
 
         <!-- Main -->
-        <main class="col-md-10 ms-sm-auto px-4">
+        <main id="admin-main" class="col-md-10 ms-sm-auto px-4"
+              data-buscar-productos="@Model.BuscarProductos"
+              data-buscar-categorias="@Model.BuscarCategorias"
+              data-buscar-usuarios="@Model.BuscarUsuarios"
+              data-buscar-pedidos="@Model.BuscarPedidos">
             <div class="pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h4">Panel de administración</h1>
                 <small class="text-muted">Usa la barra lateral para navegar entre secciones</small>
             </div>
+                
 
-            <!-- Productos -->
+            <!-- Productos: buscador -->
             <section id="productos" class="admin-tab">
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <strong>Productos</strong>
-                        <div>
-                            <a class="btn btn-sm btn-success" href="/admin/productos/nuevo">Nuevo</a>
+                        <div class="d-flex align-items-center gap-2">
+                            <strong class="me-3">Productos</strong>
+                            <form class="d-flex" method="get" asp-area="Administracion" asp-controller="Productos" asp-action="Nuevo"> <!--FALLO AQUI-->
+                                <button class="btn btn-sm btn-success" type="submit">Nuevo producto</button>
+                            </form>
                         </div>
+
+                        <form class="d-flex" method="get" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">
+                            <input name="qProductos" class="form-control form-control-sm me-2" placeholder="Buscar Id o nombre/descr." value="@Model.BuscarProductos" />
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Buscar</button>
+                            <a class="btn btn-sm btn-outline-secondary ms-2" href="/administracion">Limpiar</a>
+                        </form>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table mb-0">
-                                <thead class="table-light">
-                                    <tr><th>Id</th><th>Nombre</th><th>Precio</th><th>CategoriaId</th><th>Fecha</th><th></th></tr>
-                                </thead>
+                                <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Precio</th><th>CategoriaId</th><th>Fecha</th><th></th></tr></thead>
                                 <tbody>
                                     @foreach (var p in Model.Productos)
                                     {
@@ -60,10 +71,16 @@
                                             <td>@p.Nombre</td>
                                             <td>@p.Precio.ToString("C")</td>
                                             <td>@p.CategoriaId</td>
-                                            <td>@p.FechaCreacion.ToShortDateString()</td>
+                                            <td>@p.CategoriaId</td>
                                             <td>
-                                                <a class="btn btn-sm btn-outline-primary" href="/admin/productos/detalle/@p.Id">Ver</a>
-                                                <a class="btn btn-sm btn-outline-secondary" href="/admin/productos/editar/@p.Id">Editar</a>
+                                                <a class="btn btn-sm btn-outline-primary" href="/administracion/productos/detalle/@p.Id">Ver</a>
+                                                <a class="btn btn-sm btn-outline-secondary" href="/administracion/productos/editar/@p.Id">Editar</a>
+
+                                                <form asp-area="Administracion" asp-controller="Productos" asp-action="Eliminar" method="post" class="d-inline" onsubmit="return confirm('Eliminar producto @p.Nombre ?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@p.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     }
@@ -74,26 +91,39 @@
                 </div>
             </section>
 
-            <!-- Categorías -->
+            <!-- Categorías: buscador -->
             <section id="categorias" class="admin-tab d-none">
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between">
-                        <strong>Categorías</strong>
-                        <a class="btn btn-sm btn-success" href="/admin/categorias/nuevo">Nuevo</a>
+                        <div class="d-flex align-items-center gap-2">
+                            <strong class="me-3">Categorías</strong>
+                            <a class="btn btn-sm btn-success" asp-area="Administracion" asp-controller="Categorias" asp-action="Nuevo">Nueva categoría</a>
+                        </div>
+
+                        <form class="d-flex" method="get" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">
+                            <input name="qCategorias" class="form-control form-control-sm me-2" placeholder="Buscar Id o nombre" value="@Model.BuscarCategorias" />
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Buscar</button>
+                            <a class="btn btn-sm btn-outline-secondary ms-2" href="/administracion">Limpiar</a>
+                        </form>
                     </div>
                     <div class="card-body p-0">
                         <table class="table mb-0">
-                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Descripción</th><th></th></tr></thead>
+                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th></th></tr></thead>
                             <tbody>
                                 @foreach (var c in Model.Categorias)
                                 {
                                     <tr>
                                         <td>@c.Id</td>
                                         <td>@c.Nombre</td>
-                                        <td>@c.Descripcion</td>
                                         <td>
-                                            <a class="btn btn-sm btn-outline-primary" href="/admin/categorias/detalle/@c.Id">Ver</a>
-                                            <a class="btn btn-sm btn-outline-secondary" href="/admin/categorias/editar/@c.Id">Editar</a>
+                                            <a class="btn btn-sm btn-outline-primary" href="/administracion/categorias/detalle/@c.Id">Ver</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="/administracion/categorias/editar/@c.Id">Editar</a>
+
+                                            <form asp-area="Administracion" asp-controller="Categorias" asp-action="Eliminar" method="post" class="d-inline" onsubmit="return confirm('Eliminar categoría @c.Nombre ?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@c.Id" />
+                                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 }
@@ -103,10 +133,17 @@
                 </div>
             </section>
 
-            <!-- Usuarios -->
+            <!-- Usuarios: buscador -->
             <section id="usuarios" class="admin-tab d-none">
                 <div class="card mb-4">
-                    <div class="card-header"><strong>Usuarios</strong></div>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Usuarios</strong>
+                        <form class="d-flex" method="get" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">
+                            <input name="qUsuarios" class="form-control form-control-sm me-2" placeholder="Buscar Id, nombre o email" value="@Model.BuscarUsuarios" />
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Buscar</button>
+                            <a class="btn btn-sm btn-outline-secondary ms-2" href="/administracion">Limpiar</a>
+                        </form>
+                    </div>
                     <div class="card-body p-0">
                         <table class="table mb-0">
                             <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Email</th><th>RolId</th><th>Activo</th><th></th></tr></thead>
@@ -120,8 +157,8 @@
                                         <td>@u.RolId</td>
                                         <td>@(u.Activo ? "Sí" : "No")</td>
                                         <td>
-                                            <a class="btn btn-sm btn-outline-primary" href="/admin/usuarios/detalle/@u.Id">Ver</a>
-                                            <a class="btn btn-sm btn-outline-secondary" href="/admin/usuarios/editar-rol/@u.Id">Editar rol</a>
+                                            <a class="btn btn-sm btn-outline-primary" href="/administracion/usuarios/detalle/@u.Id">Ver</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="/administracion/usuarios/editar-rol/@u.Id">Editar rol</a>
                                         </td>
                                     </tr>
                                 }
@@ -131,10 +168,17 @@
                 </div>
             </section>
 
-            <!-- Pedidos -->
+            <!-- Pedidos: buscador por id o usuario -->
             <section id="pedidos" class="admin-tab d-none">
                 <div class="card mb-4">
-                    <div class="card-header"><strong>Pedidos</strong></div>
+                    <div class="card-header d-flex justify-content-between">
+                        <strong>Pedidos</strong>
+                        <form class="d-flex" method="get" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">
+                            <input name="qPedidos" class="form-control form-control-sm me-2" placeholder="Buscar Id de pedido o usuario" value="@Model.BuscarPedidos" />
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Buscar</button>
+                            <a class="btn btn-sm btn-outline-secondary ms-2" href="/administracion">Limpiar</a>
+                        </form>
+                    </div>
                     <div class="card-body p-0">
                         <table class="table mb-0">
                             <thead class="table-light"><tr><th>Id</th><th>UsuarioId</th><th>Fecha</th><th>Total</th><th></th></tr></thead>
@@ -146,7 +190,7 @@
                                         <td>@o.UsuarioId</td>
                                         <td>@o.FechaCreacion.ToString("g")</td>
                                         <td>@o.Total.ToString("C")</td>
-                                        <td><a class="btn btn-sm btn-outline-primary" href="/admin/pedidos/detalle/@o.Id">Ver</a></td>
+                                        <td><a class="btn btn-sm btn-outline-primary" href="/administracion/pedidos/detalle/@o.Id">Ver</a></td>
                                     </tr>
                                 }
                             </tbody>
@@ -158,14 +202,32 @@
     </div>
 </div>
 
-@section scripts {
+@section Scripts {
     <script>
-        function showTab(e, name){
-            e.preventDefault();
+        function mostrarTab(e, name){
+            e && e.preventDefault();
             document.querySelectorAll('.admin-tab').forEach(s => s.classList.add('d-none'));
-            document.getElementById(name).classList.remove('d-none');
-            document.querySelectorAll('.sidebar .nav-link').forEach(a => a.classList.remove('active'));
-            e.currentTarget.classList.add('active');
+            var target = document.getElementById(name);
+            if (target) target.classList.remove('d-none');
+            document.querySelectorAll('.nav.flex-column .nav-link').forEach(a => a.classList.remove('active'));
+            if (e && e.currentTarget) e.currentTarget.classList.add('active');
         }
+
+        // Abrir pestaña según búsqueda activa (prioridad: productos, categorias, usuarios, pedidos)
+        (function(){
+            const main = document.getElementById('admin-main');
+            if (!main) return;
+            const sp = main.dataset.buscarProductos;
+            const sc = main.dataset.buscarCategorias;
+            const su = main.dataset.buscarUsuarios;
+            const so = main.dataset.buscarPedidos;
+
+            if (sp && sp.length) return mostrarTab(null,'productos');
+            if (sc && sc.length) return mostrarTab(null,'categorias');
+            if (su && su.length) return mostrarTab(null,'usuarios');
+            if (so && so.length) return mostrarTab(null,'pedidos');
+
+            // por defecto mostrar productos (ya visible)
+        })();
     </script>
 }

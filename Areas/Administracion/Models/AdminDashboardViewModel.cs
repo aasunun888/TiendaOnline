@@ -5,13 +5,19 @@ namespace TiendaOnline.Areas.Administracion.Models
 {
     public class AdminDashboardViewModel
     {
-        public List<ProductSummary> Productos { get; set; } = new();
-        public List<CategorySummary> Categorias { get; set; } = new();
-        public List<UserSummary> Usuarios { get; set; } = new();
-        public List<OrderSummary> Pedidos { get; set; } = new();
+            public List<ProductoSummary> Productos { get; set; } = new();
+        public List<CategoriaSummary> Categorias { get; set; } = new();
+        public List<UsuarioSummary> Usuarios { get; set; } = new();
+        public List<PedidoSummary> Pedidos { get; set; } = new();
+
+        // Búsquedas por pestaña
+        public string BuscarProductos { get; set; } = "";
+        public string BuscarCategorias { get; set; } = "";
+        public string BuscarUsuarios { get; set; } = "";
+        public string BuscarPedidos { get; set; } = "";
     }
 
-    public class ProductSummary
+    public class ProductoSummary
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = "";
@@ -20,14 +26,13 @@ namespace TiendaOnline.Areas.Administracion.Models
         public DateTime FechaCreacion { get; set; }
     }
 
-    public class CategorySummary
+    public class CategoriaSummary
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = "";
-        public string Descripcion { get; set; } = "";
     }
 
-    public class UserSummary
+    public class UsuarioSummary
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = "";
@@ -37,7 +42,7 @@ namespace TiendaOnline.Areas.Administracion.Models
         public bool Activo { get; set; }
     }
 
-    public class OrderSummary
+    public class PedidoSummary
     {
         public int Id { get; set; }
         public int UsuarioId { get; set; }

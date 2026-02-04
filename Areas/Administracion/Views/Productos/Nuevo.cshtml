@@ -1,0 +1,52 @@
+@model TiendaOnline.Areas.Administracion.Models.ProductoCreacionViewModel
+
+@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Nuevo producto";
+}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header"><strong>Nuevo producto</strong></div>
+        <div class="card-body">
+            <form asp-area="Administracion" asp-controller="Productos" asp-action="Nuevo" method="post">
+                @Html.AntiForgeryToken()
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre</label>
+                        <input class="form-control" name="Nombre" value="@Model.Nombre" />
+                        <span class="text-danger">@ViewData.ModelState["Nombre"]?.Errors.FirstOrDefault()?.ErrorMessage</span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Precio</label>
+                        <input class="form-control" name="Precio" value="@Model.Precio" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="Descripcion">@Model.Descripcion</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Color</label>
+                        <input class="form-control" name="Color" value="@Model.Color" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Imagen URL</label>
+                        <input class="form-control" name="ImagenUrl" value="@Model.ImagenUrl" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select" name="CategoriaId">
+                            @foreach(var c in Model.Categorias)
+                            {
+                                <option value="@c.Id">@c.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <button class="btn btn-dark" type="submit">Crear producto</button>
+                        <a class="btn btn-outline-secondary ms-2" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">Cancelar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
