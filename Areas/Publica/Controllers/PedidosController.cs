@@ -3,7 +3,7 @@ using System;
 using System.Security.Claims;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using TiendaOnline.Areas.Publica.Models;
+using TiendaOnline.Areas.Publica.Models.PedidoModels;
 using TiendaOnline.Entidades;
 
 namespace TiendaOnline.Areas.Publica.Controllers

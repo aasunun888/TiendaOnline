@@ -1,4 +1,4 @@
-@model TiendaOnline.Areas.Publica.Models.CheckoutViewModel
+@model TiendaOnline.Areas.Publica.Models.CarritoModels.CheckoutViewModel
 
 @{
     ViewBag.Title = "Checkout";
@@ -13,6 +13,10 @@
         <div class="col-md-7">
             <div class="card mb-4">
                 <div class="card-header bg-dark text-white">
+                    @if (TempData["CheckoutError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["CheckoutError"]</div>
+                    }
                     <strong>Datos personales</strong>
                 </div>
                 <div class="card-body">

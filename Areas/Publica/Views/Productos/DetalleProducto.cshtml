@@ -1,5 +1,4 @@
-﻿@model TiendaOnline.Entidades.Producto
-@using TiendaOnline.Entidades
+﻿@model TiendaOnline.Areas.Publica.Models.ProductosModels.ProductoViewModel
 
 @{
     ViewBag.Title = "Detalle del Producto";
@@ -68,6 +67,29 @@
         </div>
     </div>
 </div>
+
+<!--  TODO Section productos destacados-->
+<h1 class="display-4 fw-bold text-center mt-5 mb-4">Productos Relacionados</h1>
+
+<div id="carrusel-relacionados"></div>
+
+<script>
+    (async function() {
+        const container = document.getElementById('carrusel-relacionados');
+        try {
+            // Se añade id = Model.Id para que el controller reciba el Id correcto
+            const res = await fetch('@Url.Action("ProductosRelacionados", "Productos", new { area = "Publica", id = Model.Id })', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (res.ok) {
+                const html = await res.text();
+                container.innerHTML = html;
+            } else {
+                console.error('No se pudo cargar el carrusel: ', res.status);
+            }
+        } catch (err) {
+            console.error('Error al cargar carrusel:', err);
+        }
+    })();
+</script>
 
 <script>
     function validarSeleccionTalla() {

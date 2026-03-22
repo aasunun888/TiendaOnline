@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TiendaOnline.Entidades;
 
 namespace TiendaOnline.Areas.Administracion.Models
 {
@@ -22,14 +23,17 @@ namespace TiendaOnline.Areas.Administracion.Models
         public int Id { get; set; }
         public string Nombre { get; set; } = "";
         public decimal Precio { get; set; }
-        public int CategoriaId { get; set; }
+        public int? CategoriaId { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public bool Activo { get; set; }
     }
 
     public class CategoriaSummary
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = "";
+
+        public int ProductoContador { get; set; }
     }
 
     public class UsuarioSummary
@@ -39,6 +43,8 @@ namespace TiendaOnline.Areas.Administracion.Models
         public string Apellido { get; set; } = "";
         public string Email { get; set; } = "";
         public int RolId { get; set; }
+
+        public string NombreRol { get; set; } = "";
         public bool Activo { get; set; }
     }
 
@@ -48,5 +54,6 @@ namespace TiendaOnline.Areas.Administracion.Models
         public int UsuarioId { get; set; }
         public DateTime FechaCreacion { get; set; }
         public decimal Total { get; set; }
+
     }
 }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TiendaOnline.Areas.Administracion.Models
+namespace TiendaOnline.Areas.Administracion.Models.ProductoModels
 {
     public class ProductoCreacionViewModel
     {

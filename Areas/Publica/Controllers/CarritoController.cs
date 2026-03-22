@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
-using TiendaOnline.Areas.Publica.Models;
 using TiendaOnline.Entidades;
 using System.Linq;
+using TiendaOnline.Areas.Publica.Models.CarritoModels;
 
 namespace TiendaOnline.Areas.Publica.Controllers
 {
@@ -46,6 +46,12 @@ namespace TiendaOnline.Areas.Publica.Controllers
             return View(carritoVM);
         }
 
+        /*Metodo Post encargado de agregar productos al carrito, recibe el Id del producto, la cantidad y la talla seleccionada. Valida que el usuario esté logueado, que la talla sea válida y 
+         * que haya stock suficiente antes de insertar o actualizar el item en el carrito. 
+         * Luego redirige al index del carrito para mostrar los cambios.
+         * 
+         * Funcionalidad: Boton de añadir al carrito en la vista de producto.
+         */
         [Route("Carrito/Agregar")]
         [HttpPost]
         public IActionResult Agregar(int productoId, int cantidad = 1, string talla = null)
@@ -58,7 +64,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
             int usuarioId = int.Parse(usuarioIdClaim);
 
             //Validar talla seleccionada
-            if (string.IsNullOrEmpty(talla))
+            if (string.IsNullOrEmpty(talla))                    
             {
                 TempData["Error"] = "Debes seleccionar una talla.";
                 return Redirect(Request.Headers["Referer"].ToString());
@@ -257,7 +263,225 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
             return RedirectToAction("Index", new { usuarioId });
         }
+        // GET: /Carrito/Checkout
+        [Route("Carrito/Checkout")]
+        [HttpGet]
+        public IActionResult Checkout()
+        {
+            // Obtener usuario actual desde claims
+            var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid);
+            if (string.IsNullOrEmpty(usuarioIdClaim))
+                return Redirect("/auth/login");
 
+            int usuarioId = int.Parse(usuarioIdClaim);
+
+            // Obtener datos necesarios
+            var usuario = ObtenerUsuario(usuarioId);
+            var carritoEntidad = ObtenerCarrito(usuarioId) ?? new Carrito { Items = new List<CarritoItem>() };
+
+            var subtotal = carritoEntidad.Items.Sum(i => (i.Producto?.Precio ?? 0m) * i.Cantidad);
+            var total = subtotal; // aquí se pueden sumar impuestos/envío si aplica
+
+            var vm = new CheckoutViewModel
+            {
+                Usuario = usuario ?? new Usuarios(),
+                Carrito = carritoEntidad,
+                Subtotal = subtotal,
+                Total = total
+            };
+
+            return View("~/Areas/Publica/Views/Carrito/Checkout.cshtml", vm);
+        }
+
+        // POST: /Carrito/Finalizar -> recibe datos del checkout (por ejemplo dirección o método de pago) GENERAR PEDIDO
+        [Route("Carrito/Finalizar")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Finalizar([FromForm] CheckoutViewModel model)
+        {
+            // Obtener usuario actual desde claims
+            var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid);
+
+            if (string.IsNullOrEmpty(usuarioIdClaim))
+                return Redirect("/auth/login");
+
+            // Convertir Id de usuario a entero
+            int usuarioId = int.Parse(usuarioIdClaim);
+
+            // Validar carrito
+            var carrito = ObtenerCarrito(usuarioId);
+
+            if (carrito == null || carrito.Items == null || !carrito.Items.Any())
+            {
+                TempData["CheckoutError"] = "Tu carrito está vacío.";
+                return RedirectToAction("Index");
+            }
+
+            // Calcular total
+            decimal total = carrito.Items.Sum(i => (i.Producto?.Precio ?? 0m) * i.Cantidad);
+
+            // Actualizar datos de usuario 
+            if (model?.Usuario != null)
+            {
+                try
+                {
+                    using (var conn = new SqlConnection(conexion))
+                    {
+                        conn.Open();
+                        var update = @"UPDATE Usuarios
+                                       SET Telefono = @Telefono,
+                                           Direccion = @Direccion,
+                                           Ciudad = @Ciudad,
+                                           CodigoPostal = @CodigoPostal
+                                       WHERE Id = @Id";
+                        using (var cmd = new SqlCommand(update, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Telefono", (object)model.Usuario.Telefono ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Direccion", (object)model.Usuario.Direccion ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Ciudad", (object)model.Usuario.Ciudad ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@CodigoPostal", (object)model.Usuario.CodigoPostal ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Id", usuarioId);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    TempData["CheckoutError"] = "No se pudieron guardar los datos de envío.";
+                    return RedirectToAction("Checkout");
+                }
+            }
+
+            // Crear pedido, insertar items, restar stock y vaciar carrito dentro de una transacción
+            int nuevoPedidoId = 0;
+            try
+            {
+                using (var conn = new SqlConnection(conexion))
+                {
+                    conn.Open();
+                    using (var tran = conn.BeginTransaction()) //Se utiliza para evitar que queden datos almacenados si algo falla en el proceso,
+                                                               //si todo va bien se hace commit y se guardan los cambios, si algo falla se hace rollback y es como si no se hubiera tramitado nada.
+                    {
+                        try
+                        {
+                            //Insertar Pedido y obtener Id
+                            var insertPedidoSql = @"INSERT INTO Pedidos (UsuarioId, FechaCreacion, Total)
+                                                    VALUES (@UsuarioId, GETDATE(), @Total);
+                                                    SELECT CAST(SCOPE_IDENTITY() AS INT);";
+                            using (var cmdPedido = new SqlCommand(insertPedidoSql, conn, tran))
+                            {
+                                cmdPedido.Parameters.AddWithValue("@UsuarioId", usuarioId);
+                                cmdPedido.Parameters.AddWithValue("@Total", total);
+
+                                //ejecutar y esperar valor devuelta
+                                var resultado = cmdPedido.ExecuteScalar();
+
+                                nuevoPedidoId = resultado != null ? Convert.ToInt32(resultado) : 0;
+                            }
+
+                            if (nuevoPedidoId == 0)
+                                throw new Exception("No se pudo crear el pedido.");
+
+                            //Por cada item: verificar stock, restar stock e insertar PedidoItem
+                            foreach (var item in carrito.Items)
+                            {
+                                if (item.Producto == null)
+                                    throw new Exception("Producto del carrito no existe.");
+
+                                /*COMPROBAR STOCK actual de la talla dentro de la transacción*/
+
+                                var selectStockSql = "SELECT Stock FROM TallasProducto WHERE Id = @TallaProductoId";
+                                int stockActual;
+                                using (var cmdStock = new SqlCommand(selectStockSql, conn, tran))
+                                {
+                                    cmdStock.Parameters.AddWithValue("@TallaProductoId", item.TallaProductoId);
+
+                                    //ejecutar y esperar valor devuelta
+                                    var cantidadStock = cmdStock.ExecuteScalar();
+
+                                if (cantidadStock == null)
+                                    throw new Exception($"Talla (Id={item.TallaProductoId}) no encontrada para el producto {item.ProductoId}.");
+
+                                    //Convertir resultado en entero
+                                    stockActual = Convert.ToInt32(cantidadStock);
+                                }
+
+                                if (stockActual < item.Cantidad)
+                                    throw new Exception($"No hay stock suficiente para {item.Producto.Nombre} (talla {item.TallaProducto?.Talla}).");
+
+                                // Restar stock (asegurando no quedar negativo)
+                                var actualizarStockSql = @"UPDATE TallasProducto
+                                                       SET Stock = Stock - @Cantidad
+                                                       WHERE Id = @TallaProductoId AND Stock >= @Cantidad";
+                                using (var cmdActuStock = new SqlCommand(actualizarStockSql, conn, tran))
+                                {
+                                    cmdActuStock.Parameters.AddWithValue("@Cantidad", item.Cantidad);
+                                    cmdActuStock.Parameters.AddWithValue("@TallaProductoId", item.TallaProductoId);
+                                    //Ejecutar y esperar devolucion de filas afectadas
+                                    var filas = cmdActuStock.ExecuteNonQuery();
+
+                                    if (filas == 0)
+                                        throw new Exception($"No se pudo actualizar stock para la talla Id={item.TallaProductoId}.");
+                                }
+
+                                /*FIN DE COMPROBACION DE STOCK*/
+
+                                /*INSERTAR CADA ITEM EN TABLA*/
+
+                                // Insertar PedidoItem (guardar precio actual)
+                                var insertItemSql = @"INSERT INTO PedidoItem (PedidoId, ProductoId, Cantidad, Precio, TallaProductoId)
+                                                      VALUES (@PedidoId, @ProductoId, @Cantidad, @Precio, @TallaProductoId)";
+                                using (var cmdInsertItem = new SqlCommand(insertItemSql, conn, tran))
+                                {
+                                    cmdInsertItem.Parameters.AddWithValue("@PedidoId", nuevoPedidoId);
+                                    cmdInsertItem.Parameters.AddWithValue("@ProductoId", item.ProductoId);
+                                    cmdInsertItem.Parameters.AddWithValue("@Cantidad", item.Cantidad);
+                                    cmdInsertItem.Parameters.AddWithValue("@Precio", item.Producto.Precio);
+                                    cmdInsertItem.Parameters.AddWithValue("@TallaProductoId", item.TallaProductoId);
+
+                                    //Ejecutar y esperar devolucion de filas afectadas
+                                    cmdInsertItem.ExecuteNonQuery();
+                                }
+                            }
+
+                            //Vaciar carrito del usuario (borrar CarritoItem)
+                            var deleteItemsSql = @"DELETE CI
+                                                   FROM CarritoItem CI
+                                                   INNER JOIN Carrito C ON CI.CarritoId = C.Id
+                                                   WHERE C.UsuarioId = @UsuarioId";
+                            using (var cmdDelete = new SqlCommand(deleteItemsSql, conn, tran))
+                            {
+                                cmdDelete.Parameters.AddWithValue("@UsuarioId", usuarioId);
+
+                                //Ejecutar y esperar devolucion de filas afectadas
+                                cmdDelete.ExecuteNonQuery();
+                            }
+
+                            // Commit completo si todo ha ido bien, hasta este punto si algo falla se hace rollback y es como si no se hubiera tramitado nada.
+                            tran.Commit();
+                        }
+                        catch
+                        {
+                            tran.Rollback();
+                            throw;
+                        }
+                    }
+                }
+
+                TempData["CheckoutSuccess"] = "Compra realizada correctamente.";
+                // Redirigir al detalle del pedido nuevo
+                return RedirectToAction("Detalle", "Pedidos", new { area = "Publica", id = nuevoPedidoId });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                TempData["CheckoutError"] = "Error al procesar el pedido: " + ex.Message;
+                return RedirectToAction("Checkout");
+            }
+        }
+
+        #region Metodos auxiliares
         /* METODOS PRIVADOS DE CONEXION CON LA BASE DE DATOS */
         private Carrito ObtenerCarrito(int usuarioId)
         {
@@ -292,12 +516,13 @@ namespace TiendaOnline.Areas.Publica.Controllers
                     var cmdItems = new SqlCommand("SELECT * FROM CarritoItem WHERE CarritoId = @carritoId", connection);
                     cmdItems.Parameters.AddWithValue("@carritoId", carrito.Id);
 
+                    //Adaptador de datos para llenar un DataTable con los items del carrito
                     var dtItems = new DataTable();
                     using (var adapterItems = new SqlDataAdapter(cmdItems))
                     {
                         adapterItems.Fill(dtItems);
                     }
-
+                    // Por cada fila del DataTable de items, crear un CarritoItem y agregarlo a la lista de items del carrito
                     foreach (DataRow filaItem in dtItems.Rows)
                     {
                         var item = new CarritoItem
@@ -309,6 +534,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                             TallaProductoId = filaItem.Table.Columns.Contains("TallaProductoId") && filaItem["TallaProductoId"] != DBNull.Value ? (int)filaItem["TallaProductoId"] : 0
                         };
 
+                        // Obtener el producto asociado al item y asignarlo a la propiedad Producto del item
                         item.Producto = ObtenerProducto(item.ProductoId, connection);
 
                         if (item.TallaProductoId > 0)
@@ -325,6 +551,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
         }
 
 
+        
 
         /*METODO AUXILIAR PARA CREAR UN PRODUCTO Y ALMACENARLO EN EL CARRITO*/
         private Producto ObtenerProducto(int productoId, SqlConnection connection)
@@ -441,202 +668,9 @@ namespace TiendaOnline.Areas.Publica.Controllers
             }
         }
 
-        // GET: /Carrito/Checkout
-        [Route("Carrito/Checkout")]
-        [HttpGet]
-        public IActionResult Checkout()
-        {
-            // Obtener usuario actual desde claims
-            var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid);
-            if (string.IsNullOrEmpty(usuarioIdClaim))
-                return Redirect("/auth/login");
-
-            int usuarioId = int.Parse(usuarioIdClaim);
-
-            // Obtener datos necesarios
-            var usuario = ObtenerUsuario(usuarioId);
-            var carritoEntidad = ObtenerCarrito(usuarioId) ?? new Carrito { Items = new List<CarritoItem>() };
-
-            var subtotal = carritoEntidad.Items.Sum(i => (i.Producto?.Precio ?? 0m) * i.Cantidad);
-            var total = subtotal; // aquí se pueden sumar impuestos/envío si aplica
-
-            var vm = new CheckoutViewModel
-            {
-                Usuario = usuario ?? new Usuario(),
-                Carrito = carritoEntidad,
-                Subtotal = subtotal,
-                Total = total
-            };
-
-            return View("~/Areas/Publica/Views/Carrito/Checkout.cshtml", vm);
-        }
-
-        // POST: /Carrito/Finalizar -> recibe datos del checkout (por ejemplo dirección o método de pago)
-        [Route("Carrito/Finalizar")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Finalizar([FromForm] CheckoutViewModel model)
-        {
-            var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid);
-            if (string.IsNullOrEmpty(usuarioIdClaim))
-                return Redirect("/auth/login");
-
-            int usuarioId = int.Parse(usuarioIdClaim);
-
-            // Validar carrito
-            var carrito = ObtenerCarrito(usuarioId);
-            if (carrito == null || carrito.Items == null || !carrito.Items.Any())
-            {
-                TempData["CheckoutError"] = "Tu carrito está vacío.";
-                return RedirectToAction("Index");
-            }
-
-            // Calcular total
-            decimal total = carrito.Items.Sum(i => (i.Producto?.Precio ?? 0m) * i.Cantidad);
-
-            // Actualizar datos de usuario (opcional)
-            if (model?.Usuario != null)
-            {
-                try
-                {
-                    using (var conn = new SqlConnection(conexion))
-                    {
-                        conn.Open();
-                        var update = @"UPDATE Usuarios
-                                       SET Telefono = @Telefono,
-                                           Direccion = @Direccion,
-                                           Ciudad = @Ciudad,
-                                           CodigoPostal = @CodigoPostal
-                                       WHERE Id = @Id";
-                        using (var cmd = new SqlCommand(update, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@Telefono", (object)model.Usuario.Telefono ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@Direccion", (object)model.Usuario.Direccion ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@Ciudad", (object)model.Usuario.Ciudad ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@CodigoPostal", (object)model.Usuario.CodigoPostal ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@Id", usuarioId);
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    TempData["CheckoutError"] = "No se pudieron guardar los datos de envío.";
-                    return RedirectToAction("Checkout");
-                }
-            }
-
-            // Crear pedido, insertar items, restar stock y vaciar carrito dentro de una transacción
-            int nuevoPedidoId = 0;
-            try
-            {
-                using (var conn = new SqlConnection(conexion))
-                {
-                    conn.Open();
-                    using (var tran = conn.BeginTransaction())
-                    {
-                        try
-                        {
-                            //Insertar Pedido y obtener Id
-                            var insertPedidoSql = @"INSERT INTO Pedidos (UsuarioId, FechaCreacion, Total)
-                                                    VALUES (@UsuarioId, GETDATE(), @Total);
-                                                    SELECT CAST(SCOPE_IDENTITY() AS INT);";
-                            using (var cmdPedido = new SqlCommand(insertPedidoSql, conn, tran))
-                            {
-                                cmdPedido.Parameters.AddWithValue("@UsuarioId", usuarioId);
-                                cmdPedido.Parameters.AddWithValue("@Total", total);
-                                var result = cmdPedido.ExecuteScalar();
-                                nuevoPedidoId = result != null ? Convert.ToInt32(result) : 0;
-                            }
-
-                            if (nuevoPedidoId == 0)
-                                throw new Exception("No se pudo crear el pedido.");
-
-                            //Por cada item: verificar stock, restar stock e insertar PedidoItem
-                            foreach (var item in carrito.Items)
-                            {
-                                if (item.Producto == null)
-                                    throw new Exception("Producto del carrito no existe.");
-
-                                // Comprobar stock actual de la talla dentro de la transacción
-                                var selectStockSql = "SELECT Stock FROM TallasProducto WHERE Id = @TallaProductoId";
-                                int stockActual;
-                                using (var cmdStock = new SqlCommand(selectStockSql, conn, tran))
-                                {
-                                    cmdStock.Parameters.AddWithValue("@TallaProductoId", item.TallaProductoId);
-                                    var o = cmdStock.ExecuteScalar();
-                                    if (o == null)
-                                        throw new Exception($"Talla (Id={item.TallaProductoId}) no encontrada para el producto {item.ProductoId}.");
-                                    stockActual = Convert.ToInt32(o);
-                                }
-
-                                if (stockActual < item.Cantidad)
-                                    throw new Exception($"No hay stock suficiente para {item.Producto.Nombre} (talla {item.TallaProducto?.Talla}).");
-
-                                // Restar stock (asegurando no quedar negativo)
-                                var updateStockSql = @"UPDATE TallasProducto
-                                                       SET Stock = Stock - @Cantidad
-                                                       WHERE Id = @TallaProductoId AND Stock >= @Cantidad";
-                                using (var cmdUpdateStock = new SqlCommand(updateStockSql, conn, tran))
-                                {
-                                    cmdUpdateStock.Parameters.AddWithValue("@Cantidad", item.Cantidad);
-                                    cmdUpdateStock.Parameters.AddWithValue("@TallaProductoId", item.TallaProductoId);
-                                    var filas = cmdUpdateStock.ExecuteNonQuery();
-                                    if (filas == 0)
-                                        throw new Exception($"No se pudo actualizar stock para la talla Id={item.TallaProductoId}.");
-                                }
-
-                                // Insertar PedidoItem (guardar precio actual)
-                                var insertItemSql = @"INSERT INTO PedidoItem (PedidoId, ProductoId, Cantidad, Precio, TallaProductoId)
-                                                      VALUES (@PedidoId, @ProductoId, @Cantidad, @Precio, @TallaProductoId)";
-                                using (var cmdInsertItem = new SqlCommand(insertItemSql, conn, tran))
-                                {
-                                    cmdInsertItem.Parameters.AddWithValue("@PedidoId", nuevoPedidoId);
-                                    cmdInsertItem.Parameters.AddWithValue("@ProductoId", item.ProductoId);
-                                    cmdInsertItem.Parameters.AddWithValue("@Cantidad", item.Cantidad);
-                                    cmdInsertItem.Parameters.AddWithValue("@Precio", item.Producto.Precio);
-                                    cmdInsertItem.Parameters.AddWithValue("@TallaProductoId", item.TallaProductoId);
-                                    cmdInsertItem.ExecuteNonQuery();
-                                }
-                            }
-
-                            //Vaciar carrito del usuario (borrar CarritoItem)
-                            var deleteItemsSql = @"DELETE CI
-                                                   FROM CarritoItem CI
-                                                   INNER JOIN Carrito C ON CI.CarritoId = C.Id
-                                                   WHERE C.UsuarioId = @UsuarioId";
-                            using (var cmdDelete = new SqlCommand(deleteItemsSql, conn, tran))
-                            {
-                                cmdDelete.Parameters.AddWithValue("@UsuarioId", usuarioId);
-                                cmdDelete.ExecuteNonQuery();
-                            }
-
-                            // Commit si todo OK
-                            tran.Commit();
-                        }
-                        catch
-                        {
-                            tran.Rollback();
-                            throw;
-                        }
-                    }
-                }
-
-                TempData["CheckoutSuccess"] = "Compra realizada correctamente.";
-                // Redirigir al detalle del pedido nuevo
-                return RedirectToAction("Detalle", "Pedidos", new { area = "Publica", id = nuevoPedidoId });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                TempData["CheckoutError"] = "Error al procesar el pedido: " + ex.Message;
-                return RedirectToAction("Checkout");
-            }
-        }
 
         // Helper para obtener datos del usuario desde la BBDD
-        private Usuario ObtenerUsuario(int usuarioId)
+        private Usuarios ObtenerUsuario(int usuarioId)
         {
             using (var conn = new SqlConnection(conexion))
             {
@@ -656,7 +690,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                     if (dt.Rows.Count > 0)
                     {
                         var r = dt.Rows[0];
-                        return new Usuario
+                        return new Usuarios
                         {
                             Id = r.Field<int>("Id"),
                             Nombre = r["Nombre"] == DBNull.Value ? "" : r.Field<string>("Nombre")!,
@@ -677,5 +711,6 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
             return null;
         }
+        #endregion
     }
 }

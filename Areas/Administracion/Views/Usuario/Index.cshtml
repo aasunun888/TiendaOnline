@@ -1,0 +1,118 @@
+﻿@model TiendaOnline.Areas.Administracion.Models.UsuarioModels.UsuarioViewModel
+@using System.Security.Claims
+
+@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Detalle usuario";
+
+    // comprobar si la vista muestra al usuario logueado
+    var usuarioActualLogueado = User.FindFirstValue(ClaimTypes.Sid);
+    var esAdmin = int.TryParse(usuarioActualLogueado, out var idParseado) && idParseado == Model.Id;
+}
+@section styles{
+    <link rel="stylesheet" href="~/css/Admin/Usuario/Usuario.css" asp-append-version="true" />
+}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-3">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h4>Usuario: @Model.Nombre @Model.Apellido</h4>
+                    <p class="text-muted mb-0">Email: @Model.Email</p>
+                    <p class="text-muted">Registrado: @Model.FechaRegistro.ToString("g")</p>
+                </div>
+
+                <div class="ms-auto">
+                    <form asp-area="Administracion" asp-controller="Usuario" asp-action="CambiarRol" method="post" id="formCambiarRol">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="d-flex align-items-center">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input admin-switch" type="checkbox" id="rolSwitch" name="isAdmin"
+                                @(Model.RolId == 2 ? "checked" : "") @(esAdmin ? "disabled" : "") onchange="cambioRol(this)" />
+                                <label class="form-check-label ms-2" for="rolSwitch">Administrador</label>
+                            </div>
+
+                            <span id="cambioRol" class="cambio @(Model.RolId == 2 ? "bg-success" : "bg-secondary")">
+                                @(Model.RolId == 2 ? "Administrador" : "Cliente")
+                            </span>
+                        </div>
+
+                        @if (esAdmin)
+                        {
+                            <div class="mt-2">
+                                <small class="text-warning">No puedes quitarte el rol de administrador mientras estés logueado. Pide a otro administrador que lo haga.</small>
+                            </div>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Pedidos de @Model.Nombre</strong>
+                    <a asp-area="Administracion" asp-controller="Dashboard" asp-action="Index" class="btn btn-sm btn-outline-secondary">Volver</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Pedidos == null || !Model.Pedidos.Any())
+                    {
+                        <div class="p-3 text-muted">No hay pedidos para este usuario.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead class="table-light">
+                                    <tr><th>Id</th><th>Fecha</th><th>Total</th><th></th></tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var p in Model.Pedidos)
+                                    {
+                                        <tr>
+                                            <td>@p.Id</td>
+                                            <td>@p.FechaCreacion.ToString("g")</td>
+                                            <td>@p.Total.ToString("C")</td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   asp-area="Administracion" asp-controller="Pedido" asp-action="Detalle" asp-route-id="@p.Id">Ver</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function cambioRol(el) {
+        // si el elemento está deshabilitado no enviar.
+        if (el.disabled) return;
+
+        var cambio = document.getElementById('cambioRol');
+        if (!cambio) return;
+
+        if (el.checked) {
+            cambio.classList.remove('bg-secondary');
+            cambio.classList.add('bg-success');
+            cambio.textContent = 'Administrador';
+        } else {
+            cambio.classList.remove('bg-success');
+            cambio.classList.add('bg-secondary');
+            cambio.textContent = 'Cliente';
+        }
+
+        // animación corta
+        cambio.classList.add('rol-cambio-anim');
+        setTimeout(function () { cambio.classList.remove('rol-cambio-anim'); }, 220);
+
+        // enviar el formulario para aplicar el cambio
+        document.getElementById('formCambiarRol').submit();
+    }
+</script>

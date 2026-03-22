@@ -1,0 +1,84 @@
+﻿@model TiendaOnline.Areas.Administracion.Models.Pedidos.AdminPedidoDetalleViewModel
+
+@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = $"Pedido #{Model.PedidoId} (Admin)";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h5 mb-0">Pedido #@Model.PedidoId</h1>
+            <small class="text-muted">Fecha: @Model.FechaCreacion.ToString("g")</small>
+        </div>
+        <a asp-area="Administracion" asp-controller="Usuario" asp-action="Index" asp-route-Id="@Model.UsuarioId" class="btn btn-outline-secondary btn-sm">Volver al usuario</a>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6 class="mb-3">Artículos</h6>
+
+            @if (Model.Items == null || !Model.Items.Any())
+            {
+                <p class="text-muted">Este pedido no contiene artículos.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:90px;"></th>
+                                <th>Producto</th>
+                                <th>Talla</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio</th>
+                                <th class="text-end">Subtotal</th>
+                                <th class="text-end">Acciones</th>
+                                <th style="width:120px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "/images/placeholder-product.png" : item.ImagenUrl)"
+                                             alt="@item.ProductoNombre"
+                                             class="img-fluid rounded producto-miniatura" style="max-width:72px;" />
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@item.ProductoNombre</div>
+                                    </td>
+                                    <td>@(string.IsNullOrEmpty(item.Talla) ? "-" : item.Talla)</td>
+                                    <td class="text-center">@item.Cantidad</td>
+                                    <td class="text-end">@item.Precio.ToString("C")</td>
+                                    <td class="text-end">@((item.Precio * item.Cantidad).ToString("C"))</td>
+                                    <td class="text-end">
+                                        <a asp-area="Administracion" asp-controller="Productos" asp-action="Editar" asp-route-id="@item.ProductoId" class="btn btn-sm btn-outline-secondary">Editar producto</a>
+                                    </td>
+                                    <td class="text-end">
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">Resumen</h6>
+                    <dl class="row small mb-0">
+                        <dt class="col-6">Total</dt>
+                        <dd class="col-6 text-end fw-bold">@Model.Total.ToString("C")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

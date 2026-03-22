@@ -6,7 +6,8 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/Home/estiloHome.css" />
+    <link rel="stylesheet" href="~/css/Home/estiloHome.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Home/carrusel.css" asp-append-version="true" />
 }
 
 <!-- Section principal/portada-->
@@ -21,8 +22,26 @@
 </section>
 
 <!--  TODO Section productos destacados-->
+<h1 class="display-4 fw-bold text-center mt-5 mb-4">Productos más vendidos</h1>
 
+<div id="carrusel-mas-vendidos-container"></div>
 
+<script>
+    (async function() {
+        const container = document.getElementById('carrusel-mas-vendidos-container');
+        try {
+            const res = await fetch('@Url.Action("ProductosMasVendidos", "Home", new { area = "Publica" })', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (res.ok) {
+                const html = await res.text();
+                container.innerHTML = html;
+            } else {
+                console.error('No se pudo cargar el carrusel: ', res.status);
+            }
+        } catch (err) {
+            console.error('Error al cargar carrusel:', err);
+        }
+    })();
+</script>
 
 
 

@@ -1,46 +1,51 @@
-﻿@using TiendaOnline.Areas.Publica.Models
+﻿@using TiendaOnline.Areas.Publica.Models.UsuarioModels
 @model LoginViewModel
 
 @section Styles {
     <link rel="stylesheet" href="~/css/Home/registro.css" />
 }
-
-<!--Section Imagen lateral-->
+@section Scripts {
+    <script src="~/js/Usuarios/ComprobarRegistro.js" asp-append-version="true" defer></script>
+}
 
 <!--Section Registrar-->
 <div class="container-fluid body">
     <div class="container py-5 contenedor-registro">
         <h2 class="text-center mb-4 ">Registrarse</h2>
-        <form asp-area="Publica" asp-controller="Usuario" asp-action="RegistrarPost" method="post">
+        <form asp-area="Publica" asp-controller="Usuario" asp-action="RegistrarPost" method="post" id="registroForm" novalidate>
             <div class="row g-3">
 
                 <!-- Nombre -->
                 <div class="col-md-6">
                     <label class="form-label">Nombre</label>
-                    <input type="text" name="Nombre" class="form-control" required />
+                    <input type="text" name="Nombre" class="form-control" required aria-describedby="nombreError" />
+                    <span id="nombreError" class="text-danger"></span>
                 </div>
                 <!-- Apellido -->
                 <div class="col-md-6">
                     <label class="form-label">Apellido</label>
-                    <input type="text" name="Apellido" class="form-control" required />
+                    <input type="text" name="Apellido" class="form-control" required aria-describedby="apellidoError" />
+                    <span id="apellidoError" class="text-danger"></span>
                 </div>
-                  <!-- Email -->
+
+                <!-- Email -->
                 <div class="col-md-12">
-                <label class="form-label">Email</label>
-                <div class="input-group has-validation">
-                    <span class="input-group-text">@@</span>
-                    <input type="email" name="Email" class="form-control" required />
+                    <label class="form-label">Email</label>
+                    <div class="input-group has-validation">
+                        <span class="input-group-text">@@</span>
+                        <input type="email" name="Email" class="form-control" required aria-describedby="emailError" />
+                    </div>
+                    <span id="emailError" class="text-danger">@Model.emailComprobacion</span>
                 </div>
-                <span class="text-danger">@Model.emailComprobacion</span>
-            </div>
+
                 <!-- Contraseña -->
                 <div class="col-md-12">
                     <label class="form-label">Contraseña</label>
-                    <input type="password" name="Contraseña" class="form-control" required />
-                    <span class="text-danger">@Model.passComprobacion</span>
+                    <input type="password" name="Contraseña" class="form-control" required aria-describedby="passError" />
+                    <span id="passError" class="text-danger">@Model.passComprobacion</span>
                 </div>
 
-                <!-- Separador -->
+                <!-- Opcional -->
                 <div class="text-center my-3">
                     <span class="text-muted">— Opcional —</span>
                 </div>
@@ -67,13 +72,12 @@
                 <div class="col-md-6">
                     <label class="form-label">Código Postal</label>
                     <input type="text" name="CodigoPostal" class="form-control"  />
-                    <input type="text" name="CodigoPostal" class="form-control"  />
                 </div>
 
-                <!-- Mensajes de validación -->
+                <!-- Mensajes de validación generales -->
                 <div class="col-12">
-                    <span class="text-danger">@Model.parametrosVacios</span>
-                    <span class="text-danger">@Model.usuarioExistente</span>
+                    <span id="parametrosVacios" class="text-danger">@Model.parametrosVacios</span>
+                    <span id="usuarioExistente" class="text-danger">@Model.usuarioExistente</span>
                 </div>
 
                 <!-- Botón de registro -->

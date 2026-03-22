@@ -1,4 +1,4 @@
-@model TiendaOnline.Areas.Administracion.Models.ProductoCreacionViewModel
+@model TiendaOnline.Areas.Administracion.Models.ProductoModels.ProductoCreacionViewModel
 
 @{
     Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
@@ -9,7 +9,7 @@
         <div class="card-header"><strong>Nuevo producto</strong></div>
         <div class="card-body">
             <form asp-area="Administracion" asp-controller="Productos" asp-action="Nuevo" method="post">
-                @Html.AntiForgeryToken()
+                @Html.AntiForgeryToken() <!--Seguridad para evitar falsificacion de formularios-->
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nombre</label>

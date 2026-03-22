@@ -1,0 +1,58 @@
+﻿
+/* Layout */
+.editar-container {
+    margin-top: 1.5rem;
+}
+
+.form-left {
+    padding: 1.25rem;
+}
+
+.image-right {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Imagen */
+.product-image-wrapper {
+    width: 100%;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+}
+
+.product-image {
+    max-width: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+/* Inputs y spacing */
+.form-label {
+    font-weight: 600;
+}
+
+.field-group {
+    margin-bottom: 1rem;
+}
+
+.actions {
+    margin-top: 1.25rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 991.98px) {
+    .product-image-wrapper {
+        min-height: 220px;
+    }
+}

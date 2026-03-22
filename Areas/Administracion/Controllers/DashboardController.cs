@@ -32,15 +32,15 @@ namespace TiendaOnline.Areas.Administracion.Controllers
 
                 // Productos (con búsqueda por id o nombre/descripcion)
                 {
-                    var sql = @"SELECT TOP 200 Id, Nombre, Precio, CategoriaId, FechaCreacion FROM Productos";
+                    var sql = @"SELECT TOP 200 Id, Nombre, Precio, CategoriaId, FechaCreacion, Activo FROM Productos";
                     using var cmd = new SqlCommand();
                     cmd.Connection = conn;
 
-                    if (!string.IsNullOrWhiteSpace(vm.BuscarProductos)) //Si no esta null
+                    if (!string.IsNullOrWhiteSpace(vm.BuscarProductos))
                     {
-                        if (int.TryParse(vm.BuscarProductos.Trim(), out int pid)) //Diferenciar si es num(id) o texto(nombre/descripcion)
+                        if (int.TryParse(vm.BuscarProductos.Trim(), out int pid))
                         {
-                            sql += " WHERE Id = @pId OR Nombre LIKE @pLike OR Descripcion LIKE @pLike"; //Agregar condiciones
+                            sql += " WHERE Id = @pId OR Nombre LIKE @pLike OR Descripcion LIKE @pLike";
                             cmd.Parameters.AddWithValue("@pId", pid);
                             cmd.Parameters.AddWithValue("@pLike", $"%{vm.BuscarProductos}%");
                         }
@@ -64,34 +64,43 @@ namespace TiendaOnline.Areas.Administracion.Controllers
                             Id = r.Field<int>("Id"),
                             Nombre = r["Nombre"] == DBNull.Value ? "" : r.Field<string>("Nombre")!,
                             Precio = r.Field<decimal>("Precio"),
-                            CategoriaId = r.Field<int>("CategoriaId"),
-                            FechaCreacion = r["FechaCreacion"].Equals(DBNull.Value) ? DateTime.MinValue : r.Field<DateTime>("FechaCreacion")
+                            CategoriaId = r.Field<int?>("CategoriaId"),
+                            FechaCreacion = r["FechaCreacion"].Equals(DBNull.Value) ? DateTime.MinValue : r.Field<DateTime>("FechaCreacion"),
+                            Activo = r.Field<bool>("Activo")
                         });
                     }
                 }
 
-                // Categorías (búsqueda por id o nombre)
+                // Categorías (búsqueda por id o nombre) + contar productos por categoría
                 {
-                    var sql = @"SELECT Id, Nombre FROM Categorias";
+                    // Usar LEFT JOIN y GROUP BY para obtener el conteo de productos por categoría
+                    var sql = @"
+                        SELECT c.Id, c.Nombre, COUNT(p.Id) AS ProductoContador
+                        FROM Categorias c
+                        LEFT JOIN Productos p ON p.CategoriaId = c.Id
+                    ";
                     using var cmd = new SqlCommand();
                     cmd.Connection = conn;
 
-                    if (!string.IsNullOrWhiteSpace(vm.BuscarCategorias))//Si no esta null
+                    // Construir WHERE si hay filtro
+                    if (!string.IsNullOrWhiteSpace(vm.BuscarCategorias))
                     {
-                        if (int.TryParse(vm.BuscarCategorias.Trim(), out int cid))//Diferenciar si es num(id) o texto(nombre)
+                        if (int.TryParse(vm.BuscarCategorias.Trim(), out int cid))
                         {
-                            sql += " WHERE Id = @cId OR Nombre LIKE @cLike";
+                            sql += " WHERE c.Id = @cId OR c.Nombre LIKE @cLike";
                             cmd.Parameters.AddWithValue("@cId", cid);
                             cmd.Parameters.AddWithValue("@cLike", $"%{vm.BuscarCategorias}%");
                         }
                         else
                         {
-                            sql += " WHERE Nombre LIKE @cLike";
+                            sql += " WHERE c.Nombre LIKE @cLike";
                             cmd.Parameters.AddWithValue("@cLike", $"%{vm.BuscarCategorias}%");
                         }
                     }
 
-                    sql += " ORDER BY Nombre";
+                    sql += " GROUP BY c.Id, c.Nombre";
+                    sql += " ORDER BY c.Nombre";
+
                     cmd.CommandText = sql;
 
                     using var da = new SqlDataAdapter(cmd);
@@ -103,13 +112,16 @@ namespace TiendaOnline.Areas.Administracion.Controllers
                         {
                             Id = r.Field<int>("Id"),
                             Nombre = r["Nombre"] == DBNull.Value ? "" : r.Field<string>("Nombre")!,
+                            ProductoContador = r["ProductoContador"] == DBNull.Value ? 0 : Convert.ToInt32(r["ProductoContador"])
                         });
                     }
                 }
 
                 // Usuarios (búsqueda por id, nombre, apellido, email)
                 {
-                    var sql = @"SELECT Id, Nombre, Apellido, Email, RolId, Activo, FechaRegistro FROM Usuarios";
+                    var sql = @"SELECT u.Id, u.Nombre, u.Apellido, u.Email, u.RolId, u.Activo, u.FechaRegistro, r.Nombre AS RolNombre
+                                FROM Usuarios u
+                                LEFT JOIN Roles r ON r.Id = u.RolId";
                     using var cmd = new SqlCommand();
                     cmd.Connection = conn;
 
@@ -143,6 +155,7 @@ namespace TiendaOnline.Areas.Administracion.Controllers
                             Apellido = r["Apellido"] == DBNull.Value ? "" : r.Field<string>("Apellido")!,
                             Email = r["Email"] == DBNull.Value ? "" : r.Field<string>("Email")!,
                             RolId = r["RolId"] == DBNull.Value ? 0 : r.Field<int>("RolId"),
+                            NombreRol = r["RolNombre"] == DBNull.Value ? "" : r.Field<string>("RolNombre")!,
                             Activo = r["Activo"] == DBNull.Value ? false : r.Field<bool>("Activo")
                         });
                     }

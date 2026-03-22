@@ -1,0 +1,200 @@
+﻿:root{
+  /* Paleta coherente y neutral con acento del sitio */
+  --bg-page: #f7f8fa;
+  --card-bg: #ffffff;
+  --primary: #0b5ed7; /* acento principal coherente */
+  --muted: #6c757d;
+  --glass-border: rgba(16,24,40,0.04);
+  --radius: 12px;
+  --gap: 1rem;
+  --maxw: 1200px;
+  --text: #111827;
+  --soft-shadow: 0 6px 20px rgba(16,24,40,0.06);
+}
+
+body .novedades-page {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-page);
+  padding: 3rem 1rem;
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Contenedor dividido */
+.novedades-split {
+  width: 100%;
+  max-width: var(--maxw);
+  height: calc(100vh - 140px);
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--soft-shadow);
+  background: var(--card-bg);
+}
+
+/* Lado izquierdo: contenido */
+.novedades-contenido{
+  width: 50%;
+  padding: 3.2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent 40%);
+}
+
+/* División visual en el límite derecho del contenido */
+.divider{
+  position: relative;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(16,24,40,0.06), rgba(16,24,40,0.03));
+  height: 100%;
+  align-self: stretch;
+  flex: 0 0 1px;
+}
+
+/* Pseudo-acento diagonal para "línea cruzada" */
+.divider::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  width: 140%;
+  height: 2px;
+  background: rgba(11,94,215,0.06);
+  transform: translateX(-50%) rotate(10deg);
+  pointer-events: none;
+  filter: blur(.2px);
+}
+
+/* Lado derecho: imagen ocupando 50% */
+.novedades-image{
+  width: 50%;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: block;
+  min-height: 100%;
+}
+
+/* Overlay oscuro sutil para profesionalidad y contraste del texto si se superpone */
+.novedades-image::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2,6,23,0.18), rgba(2,6,23,0.18));
+  pointer-events: none;
+}
+
+/* Badge y tipografía */
+.novedades-card-badge { display:none; } /* si existe otro estilo, ignorar */
+
+.badge{
+  display: inline-block;
+  background: rgba(11,94,215,0.06);
+  color: var(--primary);
+  padding: .28rem .7rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: .78rem;
+}
+
+/* Texto y lead */
+.novedades-contenido h1{
+  margin: 0 0 .25rem 0;
+  font-size: 2rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.novedades-contenido .lead{
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+  max-width: 58ch;
+}
+
+/* Meta y formulario */
+.novedades-contenido .meta{
+  list-style: none;
+  padding: 0;
+  margin: .6rem 0 1rem 0;
+  display: flex;
+  gap: 1.2rem;
+  color: var(--muted);
+  font-size: .95rem;
+}
+.novedades-contenido .meta li strong{ color: var(--text); margin-right: .35rem; font-weight:600; }
+
+.subscribe{
+  display:flex;
+  gap: .6rem;
+  margin-top: .6rem;
+  align-items: center;
+  flex-wrap:wrap;
+}
+
+.subscribete input[type="email"] {
+    min-width: 220px;
+    max-width: 420px;
+    width: 55%;
+    padding: .6rem .9rem;
+    border-radius: 8px;
+    border: 1px solid rgba(16,24,40,0.06);
+    background: transparent;
+    color: var(--text);
+    outline: none;
+    transition: box-shadow .12s ease, transform .08s ease;
+    font-size: .95rem;
+}
+.subscribete input[type="email"]::placeholder {
+        color: var(--muted);
+}
+
+.btn{
+  background: var(--primary);
+  color: #fff;
+  padding: .56rem .9rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(11,94,215,0.08);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  font-size: .95rem;
+}
+
+/* Texto secundario */
+.small.muted{
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+/* Responsive: columna en móvil */
+@media (max-width: 900px){
+  .novedades-split{
+    flex-direction: column;
+    height: auto;
+  }
+  .novedades-contenido, .novedades-image { width: 100%; }
+  .divider{ display: none; }
+  .novedades-contenido{ padding: 1.5rem; }
+  .subscribete input[type="email"] {
+        width: 100%;
+    }
+}
+
+/* Fallbacks: si no existe la imagen sustituir por color */
+.novedades-image[style=""]{
+  background: linear-gradient(180deg, rgba(11,94,215,0.06), rgba(107,139,255,0.02));
+}

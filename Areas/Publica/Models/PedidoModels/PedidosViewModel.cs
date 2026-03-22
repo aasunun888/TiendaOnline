@@ -1,6 +1,6 @@
 using TiendaOnline.Entidades;
 
-namespace TiendaOnline.Areas.Publica.Models
+namespace TiendaOnline.Areas.Publica.Models.PedidoModels
 {
     public class PedidosViewModel
     {

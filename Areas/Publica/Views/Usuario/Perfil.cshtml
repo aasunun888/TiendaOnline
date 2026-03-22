@@ -1,4 +1,4 @@
-﻿@model TiendaOnline.Areas.Publica.Models.PerfilViewModel
+﻿@model TiendaOnline.Areas.Publica.Models.UsuarioModels.PerfilViewModel
 
 @{
     ViewBag.Title = "Mi Perfil";
@@ -64,5 +64,10 @@
        
         <br />
         <button type="submit" class="btn btn-primary">Actualizar</button>
+    </form>
+    <form asp-area="Publica" asp-controller="Perfil" asp-action="EliminarCuenta" method="post" class="d-inline" onsubmit="return confirm('Está seguro que desea eliminar su cuenta?');">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Usuario.Id" />
+        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
     </form>
 </div>

@@ -38,6 +38,15 @@
               data-buscar-pedidos="@Model.BuscarPedidos">
             <div class="pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h4">Panel de administración</h1>
+                @* Mostrar mensajes de éxito/ error si existen *@
+                @if (TempData["AdminSuccess"] != null)
+                {
+                    <div class="alert alert-success">@TempData["AdminSuccess"]</div>
+                }
+                @if (TempData["AdminError"] != null)
+                {
+                    <div class="alert alert-danger">@TempData["AdminError"]</div>
+                }
                 <small class="text-muted">Usa la barra lateral para navegar entre secciones</small>
             </div>
                 
@@ -46,11 +55,10 @@
             <section id="productos" class="admin-tab">
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
+
                         <div class="d-flex align-items-center gap-2">
                             <strong class="me-3">Productos</strong>
-                            <form class="d-flex" method="get" asp-area="Administracion" asp-controller="Productos" asp-action="Nuevo"> <!--FALLO AQUI-->
-                                <button class="btn btn-sm btn-success" type="submit">Nuevo producto</button>
-                            </form>
+                            <a class="btn btn-sm btn-success" asp-area="Administracion" asp-controller="Productos" asp-action="Nuevo">Nuevo producto</a>
                         </div>
 
                         <form class="d-flex" method="get" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">
@@ -62,7 +70,7 @@
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table mb-0">
-                                <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Precio</th><th>CategoriaId</th><th>Fecha</th><th></th></tr></thead>
+                                <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Precio</th><th>CategoriaId</th><th>Fecha</th><th>Activo</th><th>Acciones</th></tr></thead>
                                 <tbody>
                                     @foreach (var p in Model.Productos)
                                     {
@@ -70,17 +78,44 @@
                                             <td>@p.Id</td>
                                             <td>@p.Nombre</td>
                                             <td>@p.Precio.ToString("C")</td>
-                                            <td>@p.CategoriaId</td>
-                                            <td>@p.CategoriaId</td>
                                             <td>
-                                                <a class="btn btn-sm btn-outline-primary" href="/administracion/productos/detalle/@p.Id">Ver</a>
+                                                @if (p.CategoriaId.HasValue)
+                                                {
+                                                    @p.CategoriaId
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger fw-bold">Sin categoría</span>
+                                                }
+                                            </td>
+                                            <td>@p.FechaCreacion</td>
+                                            <td>
+                                                <div class="cont">
+                                                    <span class="icono-punto @(p.Activo ? "active" : "inactive")" aria-hidden="true"></span>
+                                                    <span class="texto-oculto">@(p.Activo ? "Activo" : "Inactivo")</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-sm btn-outline-primary" href="productos/detalle/@p.Id">Ver</a>
                                                 <a class="btn btn-sm btn-outline-secondary" href="/administracion/productos/editar/@p.Id">Editar</a>
 
-                                                <form asp-area="Administracion" asp-controller="Productos" asp-action="Eliminar" method="post" class="d-inline" onsubmit="return confirm('Eliminar producto @p.Nombre ?');">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@p.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                                                </form>
+                                                @if (p.Activo)
+                                                {
+                                                    <form asp-area="Administracion" asp-controller="Productos" asp-action="DeshabilitarProducto" method="post" class="d-inline" onsubmit="return confirm('Desea deshabilitar este producto @p.Nombre ?');">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@p.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-danger">Deshabilitar</button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <form asp-area="Administracion" asp-controller="Productos" asp-action="HabilitarProducto" method="get" class="d-inline" onsubmit="return confirm('Desea rehabilitar este producto @p.Nombre ?');">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@p.Id" />
+                                                        <button style="background-color: var(--admin-success);  border: 2px solid rgba(0,0,0,0.04);" type="submit" class="btn btn-sm btn-danger">Rehabilitar</button>
+                                                    </form>
+                                                }
+
                                             </td>
                                         </tr>
                                     }
@@ -93,6 +128,7 @@
 
             <!-- Categorías: buscador -->
             <section id="categorias" class="admin-tab d-none">
+                    
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between">
                         <div class="d-flex align-items-center gap-2">
@@ -108,18 +144,18 @@
                     </div>
                     <div class="card-body p-0">
                         <table class="table mb-0">
-                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th></th></tr></thead>
+                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Productos</th><th>Acciones</th></tr></thead>
                             <tbody>
                                 @foreach (var c in Model.Categorias)
                                 {
                                     <tr>
                                         <td>@c.Id</td>
                                         <td>@c.Nombre</td>
+                                        <td>@c.ProductoContador</td>
                                         <td>
-                                            <a class="btn btn-sm btn-outline-primary" href="/administracion/categorias/detalle/@c.Id">Ver</a>
-                                            <a class="btn btn-sm btn-outline-secondary" href="/administracion/categorias/editar/@c.Id">Editar</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="/administracion/categorias/EditarCategoria/@c.Id">Editar</a>
 
-                                            <form asp-area="Administracion" asp-controller="Categorias" asp-action="Eliminar" method="post" class="d-inline" onsubmit="return confirm('Eliminar categoría @c.Nombre ?');">
+                                            <form asp-area="Administracion" asp-controller="Categorias" asp-action="EliminarCategoria" method="post" class="d-inline" onsubmit="return confirm('Eliminar esta categoría (@c.Nombre) influiria en los productos que tengan esta categoria. Estas seguro que deseas seguir ?');">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@c.Id" />
                                                 <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
@@ -146,7 +182,7 @@
                     </div>
                     <div class="card-body p-0">
                         <table class="table mb-0">
-                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Email</th><th>RolId</th><th>Activo</th><th></th></tr></thead>
+                            <thead class="table-light"><tr><th>Id</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Activo</th><th>Acciones</th></tr></thead>
                             <tbody>
                                 @foreach (var u in Model.Usuarios)
                                 {
@@ -154,11 +190,16 @@
                                         <td>@u.Id</td>
                                         <td>@u.Nombre @u.Apellido</td>
                                         <td>@u.Email</td>
-                                        <td>@u.RolId</td>
-                                        <td>@(u.Activo ? "Sí" : "No")</td>
+                                        <td class="fw-bold">@u.NombreRol</td>
                                         <td>
-                                            <a class="btn btn-sm btn-outline-primary" href="/administracion/usuarios/detalle/@u.Id">Ver</a>
-                                            <a class="btn btn-sm btn-outline-secondary" href="/administracion/usuarios/editar-rol/@u.Id">Editar rol</a>
+                                            <div class="cont">
+                                                <span class="icono-punto @(u.Activo ? "active" : "inactive")" aria-hidden="true"></span>
+                                                <span class="texto-oculto">@(u.Activo ? "Activo" : "Inactivo")</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-primary" asp-area="Administracion" asp-controller="Usuario" asp-action="Index" asp-route-id="@u.Id">Ver/Cambiar rol</a>
+                                           
                                         </td>
                                     </tr>
                                 }
@@ -190,7 +231,7 @@
                                         <td>@o.UsuarioId</td>
                                         <td>@o.FechaCreacion.ToString("g")</td>
                                         <td>@o.Total.ToString("C")</td>
-                                        <td><a class="btn btn-sm btn-outline-primary" href="/administracion/pedidos/detalle/@o.Id">Ver</a></td>
+                                        <td><a class="btn btn-sm btn-outline-primary" href="/administracion/pedido/detalle/@o.Id">Ver</a></td>
                                     </tr>
                                 }
                             </tbody>

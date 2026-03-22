@@ -1,18 +1,24 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
-using TiendaOnline.Areas.Publica.Models;
+using TiendaOnline.Areas.Publica.Models.ProductosModels;
 using TiendaOnline.Entidades;
 
 namespace TiendaOnline.Areas.Publica.Controllers
 {
 
     [Area("Publica")]
-    [Route("")]
-
     public class ProductosController : Controller
     {
+        private readonly AppDbContext _context;
+
+        public ProductosController(AppDbContext context)
+        {
+            _context = context;
+        }
+        
         // GET: Productos para mostrar la vista de productos
         [Route("Buscar")]
         [HttpGet]
@@ -26,7 +32,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
             ProductoViewModel Producto = new();
 
             string conexion = "Server = DESKTOP-RODNH5U\\SQLEXPRESS; Database = StreetSize; Trusted_Connection = True; TrustServerCertificate=True;";
-            string query = "SELECT * FROM Productos";
+            string query = "SELECT * FROM Productos WHERE Activo = 1";
 
             try
             {
@@ -150,7 +156,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
         [Route("productos/detalle/{id}")]
         public ActionResult Detalle(int id)
         {
-            Producto productoSeleccionado = null;
+            ProductoViewModel productoSeleccionado = null;
             string conexion = "Server=DESKTOP-RODNH5U\\SQLEXPRESS;Database=StreetSize;Trusted_Connection=True;TrustServerCertificate=True;";
 
             string queryProducto = @"SELECT p.Id, p.Nombre, p.Descripcion, p.Precio, p.Color, p.ImagenUrl, 
@@ -170,6 +176,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                 {
                     conn.Open();
 
+                    // Leer datos principales del producto (incluye nombre de categoría)
                     using (var cmd = new SqlCommand(queryProducto, conn))
                     {
                         cmd.Parameters.AddWithValue("@Id", id);
@@ -177,18 +184,33 @@ namespace TiendaOnline.Areas.Publica.Controllers
                         {
                             if (reader.Read())
                             {
-                                productoSeleccionado = new Producto
+                                int ordNombre = reader.GetOrdinal("Nombre");
+                                int ordDescripcion = reader.GetOrdinal("Descripcion");
+                                int ordPrecio = reader.GetOrdinal("Precio");
+                                int ordColor = reader.GetOrdinal("Color");
+                                int ordImagenUrl = reader.GetOrdinal("ImagenUrl");
+                                int ordCategoriaId = reader.GetOrdinal("CategoriaId");
+                                int ordFechaCreacion = reader.GetOrdinal("FechaCreacion");
+                                int ordCategoriaNombre = reader.GetOrdinal("CategoriaNombre");
+
+                                productoSeleccionado = new ProductoViewModel
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                    Nombre = reader["Nombre"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Nombre")),
-                                    Descripcion = reader["Descripcion"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Descripcion")),
-                                    Precio = reader["Precio"] == DBNull.Value ? 0m : reader.GetDecimal(reader.GetOrdinal("Precio")),
-                                    Color = reader["Color"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Color")),
-                                    ImagenUrl = reader["ImagenUrl"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("ImagenUrl")),
-                                    CategoriaId = reader["CategoriaId"] == DBNull.Value ? 0 : reader.GetInt32(reader.GetOrdinal("CategoriaId")),
-                                    FechaCreacion = reader["FechaCreacion"] == DBNull.Value ? DateTime.Now : reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
-                                    CategoriaNombre = reader["CategoriaNombre"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("CategoriaNombre"))
+                                    Nombre = reader.IsDBNull(ordNombre) ? "" : reader.GetString(ordNombre),
+                                    Descripcion = reader.IsDBNull(ordDescripcion) ? "" : reader.GetString(ordDescripcion),
+                                    Precio = reader.IsDBNull(ordPrecio) ? 0m : reader.GetDecimal(ordPrecio),
+                                    Color = reader.IsDBNull(ordColor) ? "" : reader.GetString(ordColor),
+                                    ImagenUrl = reader.IsDBNull(ordImagenUrl) ? "" : reader.GetString(ordImagenUrl),
+                                    CategoriaId = reader.IsDBNull(ordCategoriaId) ? 0 : reader.GetInt32(ordCategoriaId),
+                                    FechaCreacion = reader.IsDBNull(ordFechaCreacion) ? DateTime.Now : reader.GetDateTime(ordFechaCreacion),
+                                    CategoriaNombre = reader.IsDBNull(ordCategoriaNombre) ? "" : reader.GetString(ordCategoriaNombre)
                                 };
+
+                                // Asegurar lista de tallas inicializada
+                                if (productoSeleccionado.TallasProducto == null)
+                                {
+                                    productoSeleccionado.TallasProducto = new List<TallasProducto>();
+                                }
                             }
                             else
                             {
@@ -209,8 +231,8 @@ namespace TiendaOnline.Areas.Publica.Controllers
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                     ProductoId = reader.GetInt32(reader.GetOrdinal("ProductoId")),
-                                    Talla = reader["Talla"] == DBNull.Value ? "" : reader.GetString(reader.GetOrdinal("Talla")),
-                                    Stock = reader["Stock"] == DBNull.Value ? 0 : reader.GetInt32(reader.GetOrdinal("Stock"))
+                                    Talla = reader.IsDBNull(reader.GetOrdinal("Talla")) ? "" : reader.GetString(reader.GetOrdinal("Talla")),
+                                    Stock = reader.IsDBNull(reader.GetOrdinal("Stock")) ? 0 : reader.GetInt32(reader.GetOrdinal("Stock"))
                                 };
                                 productoSeleccionado.TallasProducto.Add(talla);
                             }
@@ -225,13 +247,71 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
             if (productoSeleccionado == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             ViewBag.Breadcrumb = $"Home / Producto / {productoSeleccionado.Nombre}";
             return View("DetalleProducto", productoSeleccionado);
         }
 
+        /*TODO Función para mostrar productos relacionados,
+          en base a la categoría del producto seleccionado, mostrar otros productos de la misma categoría.
+         */
+        [HttpGet]
+        public async Task<ActionResult> ProductosRelacionados(int Id)
+        {
+           
+            try
+            {
+                //Comprobar id existe y es válido
+                if (Id <= 0)
+                {
+                    return PartialView("_CarruselProductos", new List<Producto>());
+                }
+
+                // Obtener el producto para sacar la categoría
+                var productoBase = await _context.Productos
+                    .AsNoTracking()
+                    .Where(p => p.Id == Id)
+                    .Select(p => new { p.Id, p.CategoriaId })
+                    .FirstOrDefaultAsync();
+
+                if (productoBase == null)
+                {
+                    return PartialView("_CarruselProductos", new List<Producto>());
+                }
+
+                List<Producto> relacionados = new List<Producto>();
+
+                if (productoBase.CategoriaId.HasValue)
+                {
+                    relacionados = await _context.Productos
+                        .AsNoTracking()
+                        .Where(p => p.Activo && p.CategoriaId == productoBase.CategoriaId && p.Id != Id) //Controlar que traiga productos activos con misma categoria pero que no se repita el mismo
+                        .OrderByDescending(p => p.FechaCreacion)
+                        .Take(5)
+                        .ToListAsync();
+                }
+
+                // Fallback: si no hay relacionados, mostrar productos recientes (excluyendo el actual)
+                if (relacionados == null || relacionados.Count == 0)
+                {
+                    relacionados = await _context.Productos
+                        .AsNoTracking()
+                        .Where(p => p.Activo && p.Id != Id)
+                        .OrderByDescending(p => p.FechaCreacion)
+                        .Take(5)
+                        .ToListAsync();
+                }
+
+                return PartialView("_CarruselProductos", relacionados);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error productosRelacionados: {ex.Message}");
+                return PartialView("_CarruselProductos", new List<Producto>());
+            }
+        }
 
         /*Metodo autogenerado para errores 404*/
         private ActionResult HttpNotFound()

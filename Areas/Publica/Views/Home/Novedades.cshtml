@@ -1,0 +1,37 @@
+﻿@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Novedades - En construcción";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/Home/novedades.css" asp-append-version="true" />
+}
+
+<main class="novedades-page" role="main" aria-labelledby="novedades-title">
+    <section class="novedades-split" aria-label="Novedades — en construcción">
+        <div class="novedades-contenido">
+            <div class="badge">EN CONSTRUCCIÓN</div>
+
+            <h1 id="novedades-titulo">Estamos preparando nuestras novedades</h1>
+            <p class="lead">Este verano llega ropa nueva y ofertas especiales. Mantente atento: publicaremos novedades muy pronto.</p>
+
+            <ul class="meta" aria-hidden="true">
+                <li><strong>Lanzamiento:</strong> Verano</li>
+                <li><strong>Consejo:</strong> Suscríbete para recibir aviso</li>
+            </ul>
+
+            <form class="subscribete" onsubmit="event.preventDefault(); this.querySelector('button').textContent='¡Gracias!';" aria-label="Formulario de suscripción a novedades">
+                <input type="email" name="email" placeholder="Tu correo (opcional)" aria-label="Correo para aviso" />
+                <button type="submit" class="btn">Avisadme</button>
+            </form>
+
+            <p class="small muted">Mientras tanto, explora el catálogo o vuelve pronto. ❤️</p>
+        </div>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <aside class="novedades-image" role="img" aria-label="Imagen profesional de novedades"
+               style="background-image: url('@Url.Content("~/images/e1fc5e9262ad07dbcb0e728aec01fa0d.jpg")');">
+           
+        </aside>
+    </section>
+</main>

@@ -1,0 +1,152 @@
+﻿@model TiendaOnline.Areas.Administracion.Models.CategoriaCreacionViewModel
+
+@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Nueva categoría";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Categorías existentes</h5>
+                    <small class="text-muted">@Model.Categorias.Count() categoría(s)</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:80px">Id</th>
+                                    <th>Nombre</th>
+                                    <th style="width:220px">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Categorias != null && Model.Categorias.Any())
+                                {
+                                    foreach (var c in Model.Categorias)
+                                    {
+                                        <tr>
+                                            <td>@c.Id</td>
+                                            <td>@c.Nombre</td>
+                                            @if(c.Id != Model.Id)
+                                            {
+                                                <td>
+                                                    <a class="btn btn-sm btn-outline-secondary me-2" href="/administracion/categorias/editar/@c.Id">Editar</a>
+                                                    <form asp-area="Administracion" asp-controller="Categorias" asp-action="EliminarCategoria" method="post" class="d-inline-block" onsubmit="return confirm('Eliminar esta categoría (@c.Nombre) influiria en los productos que tengan esta categoria. Estas seguro que deseas seguir ?');" style="vertical-align:middle;">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@c.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                                    </form>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-success fw-bold">En edición</td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-muted">No hay categorías registradas.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario: Editar categoría -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><strong>Editar categoría: @Model.Nombre</strong></div>
+                <div class="card-body">
+                  
+
+                    <form asp-area="Administracion" asp-controller="Categorias" asp-action="EditarCategoriaPost" method="post" id="editCategoriaForm" class="row g-3">
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+                        <input type="hidden" name="Id" value="@Model.Id" />
+
+                        <div class="col-md-8">
+                            <label class="form-label" for="Nombre">Nombre</label>
+                            <input id="Nombre" class="form-control" name="Nombre" value="@Model.Nombre" placeholder="@Model.Nombre" />
+                            <span class="text-danger">@ViewData.ModelState["Nombre"]?.Errors.FirstOrDefault()?.ErrorMessage</span>
+                        </div>
+
+                        <!-- Productos enlazados: debajo del nombre -->
+                        <div class="col-12">
+                            <h6 class="mt-3">Productos enlazados</h6>
+                            @if (Model.ProductosEnlazados != null && Model.ProductosEnlazados.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width:70px">Id</th>
+                                                <th>Nombre</th>
+                                                <th style="width:120px">Precio</th>
+                                                <th style="width:160px">Fecha</th>
+                                                <th style="width:140px">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var p in Model.ProductosEnlazados)
+                                            {
+                                                <tr>
+                                                    <td>@p.Id</td>
+                                                    <td>@p.Nombre</td>
+                                                    <td>@p.Precio.ToString("C")</td>
+                                                    <td>@p.FechaCreacion.ToString("g")</td>
+                                                    <td>
+                                                        <a asp-area="Publica" asp-controller="Productos" asp-action="Detalle" asp-route-id="@p.Id"
+                                                           class="btn btn-sm btn-outline-primary">Ver</a>
+
+                                                        <a asp-area="Administracion" asp-controller="Productos" asp-action="Editar" asp-route-id="@p.Id"
+                                                           class="btn btn-sm btn-outline-secondary">Editar</a>
+
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-muted">No hay productos asociados a esta categoría.</div>
+                            }
+                        </div>
+
+                        <div class="col-12">
+                            <a class="btn btn-outline-secondary" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">Volver al panel</a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Editar categoría seleccionada</small>
+                    <div class="d-flex align-items-center">
+                        <!-- Botón que envía el formulario principal (incluye Nombre e Id) -->
+                        <button form="editCategoriaForm" type="submit" class="btn btn-dark me-2">Actualizar</button>
+
+                        <!-- Formulario de eliminación separado (no anidado) -->
+                        <form asp-area="Administracion" asp-controller="Categorias" asp-action="EliminarCategoria" method="post" onsubmit="return confirm('Eliminar esta categoría (@Model.Nombre) influiria en los productos que tengan esta categoria. Estas seguro que deseas seguir ?');" class="m-0 p-0">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

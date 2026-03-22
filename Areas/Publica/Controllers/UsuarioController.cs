@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-using TiendaOnline.Areas.Publica.Models;
+using TiendaOnline.Areas.Publica.Models.UsuarioModels;
 
 namespace TiendaOnline.Areas.Publica.Controllers
 {
@@ -109,10 +109,11 @@ namespace TiendaOnline.Areas.Publica.Controllers
                                 new Claim(ClaimTypes.Sid, $"{idUsuario}"),
                                 new Claim(ClaimTypes.Role, rol)
                             };
-
+                            // Crear principal y autenticación con cookie
                             ClaimsIdentity identidadUsuario = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                             ClaimsPrincipal usuario = new ClaimsPrincipal(identidadUsuario);
 
+                            //Inicializar sesión con cookie de autenticación hasta que el usuario cierre sesión o pasen 24 horas
                             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, usuario, new AuthenticationProperties
                             {
                                 IsPersistent = false,

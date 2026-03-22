@@ -1,0 +1,84 @@
+﻿@model TiendaOnline.Areas.Administracion.Models.ProductoModels.ProductoEdicionViewModel
+
+@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Editar producto";
+}
+
+@section styles{
+    <link rel="stylesheet" href="\css\Producto\EditarProducto.css" asp-append-version="true" />
+
+}
+
+<div class="container editar-container">
+    <div class="card shadow-sm">
+        <div class="card-header"><strong>Editar producto</strong></div>
+        <div class="card-body">
+            <form asp-area="Administracion" asp-controller="Productos" asp-action="EditarPost" method="post" class="row g-0">
+                @Html.AntiForgeryToken()
+
+                <!-- Izquierda: campos editables -->
+                <div class="col-lg-7 form-left">
+                    <div class="">Datos Producto</div>
+                    <div class="row">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+
+                        <div class="col-12 field-group">
+                            <label class="form-label">Nombre</label>
+                            <input class="form-control" placeholder="@Model.Nombre" name="Nombre" value="@Model.Nombre" />
+                            <span class="text-danger">@ViewData.ModelState["Nombre"]?.Errors.FirstOrDefault()?.ErrorMessage</span>
+                        </div>
+
+                        <div class="col-md-6 field-group">
+                            <label class="form-label">Precio</label>
+                            <input class="form-control" placeholder="@Model.Precio" name="Precio" value="@Model.Precio" />
+                        </div>
+
+                        <div class="col-md-6 field-group">
+                            <label class="form-label">Color</label>
+                            <input class="form-control" placeholder="@Model.Color" name="Color" value="@Model.Color" />
+                        </div>
+
+                        <div class="col-12 field-group">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" placeholder="@Model.Descripcion" name="Descripcion" rows="4">@Model.Descripcion</textarea>
+                        </div>
+
+                        <div class="col-md-6 field-group">
+                            <label class="form-label">Categoría</label>
+                            <input class="form-control" disabled name="Categoria" value="@Model.CategoriaNombre" />
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <!-- Botón que abre la página de administración de tallas -->
+                            <a class="btn btn-outline-primary" asp-area="Administracion" asp-controller="Productos" asp-action="AdministrarTallas" asp-route-id="@Model.Id">
+                                Administrar tallas
+                            </a>
+                            <small class="text-muted ms-2">Ir a la gestión específica de tallas y stock.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Derecha: imagen y campo de URL -->
+                <div class="col-lg-5 image-right border-start">
+                    <div class="product-image-wrapper w-100">
+                        <img src="@Model.ImagenUrl" alt="@Model.Nombre" class="product-image" onerror="this.src='/images/placeholder.png';" />
+                    </div>
+
+                    <div class="w-100 mt-3">
+                        <label class="form-label">Imagen URL</label>
+                        <input class="form-control" name="ImagenUrl" value="@Model.ImagenUrl" />
+                        <small class="text-muted">Pega la URL completa de la imagen; la vista mostrará una previsualización.</small>
+                    </div>
+
+                </div>
+
+                <!-- Acciones: actualizar / cancelar -->
+                <div class="col-12 mt-3 d-flex justify-content-start gap-2">
+                    <button class="btn btn-dark" type="submit">Actualizar producto</button>
+                    <a class="btn btn-outline-secondary" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

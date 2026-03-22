@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 
-namespace TiendaOnline.Areas.Publica.Models
+namespace TiendaOnline.Areas.Publica.Models.UsuarioModels
 {
     public class LoginViewModel
     {
@@ -12,7 +12,6 @@ namespace TiendaOnline.Areas.Publica.Models
 
         public string usuarioExistente { get; set; } = "";
 
-        public string telefonoComprobacion { get; set; } = "";
 
 
         //funcion que devuelve true si los parámetros son correctos

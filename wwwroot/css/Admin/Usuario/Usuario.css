@@ -1,0 +1,28 @@
+﻿
+/* Switch más visible */
+.form-check-input.admin-switch {
+    accent-color: #28a745; /* navegadores modernos */
+    transition: background-color .15s, border-color .15s, box-shadow .15s;
+    width: 2.2rem;
+    height: 1.3rem;
+}
+
+    /* Asegurar color verde al estar activado */
+    .form-check-input.admin-switch:checked {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 .25rem rgba(40,167,69,.18);
+    }
+
+/* Badge que indica rol */
+#cambioRol {
+    padding: .35rem .6rem;
+    font-weight: 600;
+    transition: transform .15s ease, background-color .15s;
+    margin-left: .75rem;
+}
+
+/* pequeña animación al cambiar */
+.rol-cambio-anim {
+    transform: scale(1.06);
+}

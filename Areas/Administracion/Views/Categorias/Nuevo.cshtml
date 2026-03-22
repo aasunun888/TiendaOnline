@@ -4,19 +4,83 @@
     Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Nueva categoría";
 }
+
 <div class="container mt-4">
-    <div class="card">
-        <div class="card-header"><strong>Nueva categoría</strong></div>
-        <div class="card-body">
-            <form asp-area="Administracion" asp-controller="Categorias" asp-action="Nuevo" method="post">
-                @Html.AntiForgeryToken()
-                <div class="mb-3">
-                    <label class="form-label">Nombre</label>
-                    <input class="form-control" name="Nombre" value="@Model.Nombre" />
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Categorías existentes</h5>
+                    <small class="text-muted">@Model.Categorias.Count() categoría(s)</small>
                 </div>
-                <button class="btn btn-dark" type="submit">Crear categoría</button>
-                <a class="btn btn-outline-secondary ms-2" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">Cancelar</a>
-            </form>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:80px">Id</th>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Categorias != null && Model.Categorias.Any())
+                                {
+                                    foreach (var c in Model.Categorias)
+                                    {
+                                        <tr>
+                                            <td>@c.Id</td>
+                                            <td>@c.Nombre</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-muted">No hay categorías registradas.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario: crear nueva categoría -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header"><strong>Nueva categoría</strong></div>
+                <div class="card-body">
+                    @* Mostrar mensajes de éxito/ error si existen *@
+                    @if (TempData["AdminSuccess"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["AdminSuccess"]</div>
+                    }
+                    @if (TempData["AdminError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["AdminError"]</div>
+                    }
+
+                    <form asp-area="Administracion" asp-controller="Categorias" asp-action="NuevaCategoriaPost" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
+                        <div class="col-md-8">
+                            <label class="form-label" for="Nombre">Nombre</label>
+                            <input id="Nombre" class="form-control" name="Nombre" value="@Model.Nombre" placeholder="Nombre de la categoría" />
+                            <span class="text-danger">@ViewData.ModelState["Nombre"]?.Errors.FirstOrDefault()?.ErrorMessage</span>
+                        </div>
+
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-dark w-100" type="submit">Crear categoría</button>
+                        </div>
+
+                        <div class="col-12">
+                            <a class="btn btn-outline-secondary" asp-area="Administracion" asp-controller="Dashboard" asp-action="Index">Volver al panel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

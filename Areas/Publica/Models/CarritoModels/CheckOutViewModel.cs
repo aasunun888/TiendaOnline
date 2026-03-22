@@ -1,11 +1,11 @@
 ﻿using TiendaOnline.Entidades;
 using System.Collections.Generic;
 
-namespace TiendaOnline.Areas.Publica.Models
+namespace TiendaOnline.Areas.Publica.Models.CarritoModels
 {
     public class CheckoutViewModel
     {
-        public Usuario Usuario { get; set; } = new Usuario();
+        public Usuarios Usuario { get; set; } = new Usuarios();
         public Carrito Carrito { get; set; } = new Carrito();
         public decimal Subtotal { get; set; }
         public decimal Total { get; set; }

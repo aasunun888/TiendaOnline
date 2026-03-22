@@ -1,0 +1,125 @@
+﻿:root{
+  --admin-success: #28a745;
+  --admin-danger:  #dc3545;
+  --admin-muted:   #6c757d;
+  --admin-accent:  #0d6efd;
+  --dot-size: 14px;
+  --dot-gap: 0.5rem;
+}
+
+/* punto circular */
+.cont{
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dot-gap);
+  vertical-align: middle;
+}
+
+.icono-punto{
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.04) inset;
+  display: inline-block;
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  flex: 0 0 auto;
+  opacity: 1;
+}
+
+/* Estados */
+.icono-punto.active {
+    background-color: var(--admin-success);
+    border: 2px solid rgba(0,0,0,0.04);
+}
+
+.icono-punto.inactive {
+    background-color: var(--admin-danger);
+    border: 2px solid rgba(0,0,0,0.04);
+}
+
+/* Pequeña animación al pasar el ratón (mejora UX, no rompe accesibilidad) */
+.icono-punto:hover,
+.icono-punto:focus {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.06) inset;
+    outline: none;
+}
+
+/* Texto oculto para lectores de pantalla */
+.texto-oculto{
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ===========================
+   Estilos para las pestañas/sidebar
+   =========================== */
+
+/* Contenedor sidebar: suavizar fondo y padding */
+nav.sidebar {
+  background: linear-gradient(180deg, #ffffff, #fafafa);
+  border-right: 1px solid rgba(0,0,0,0.04);
+  min-height: 100vh;
+  padding-top: 1.25rem;
+}
+
+/* Lista de tabs */
+.nav.flex-column {
+  padding-left: 0;
+}
+
+/* Links como "tabs" — quitar estilo de enlace azul y añadir apariencia moderna */
+.nav.flex-column .nav-link {
+  display: block;
+  color: var(--admin-muted) !important;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  margin: .25rem .0;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color .15s ease, color .15s ease, transform .12s ease, box-shadow .12s ease;
+  position: relative;
+}
+
+/* Hover / focus: sutil elevación y cambio de fondo */
+.nav.flex-column .nav-link:hover,
+.nav.flex-column .nav-link:focus {
+  background-color: rgba(13,110,253,0.06); /* tono neutro agradable */
+  color: #0b5ed7 !important;
+  transform: translateX(4px);
+  text-decoration: none;
+  outline: none;
+  box-shadow: 0 4px 10px rgba(11,94,215,0.04);
+}
+
+/* Estado activo: indicador claro y animado */
+.nav.flex-column .nav-link.active {
+  background: linear-gradient(90deg, rgba(40,167,69,0.07), rgba(13,110,253,0.03));
+  color: var(--admin-accent) !important;
+  box-shadow: inset 3px 0 0 rgba(13,110,253,0.18);
+  transform: translateX(0);
+}
+
+
+
+/* Responsive: en pantallas pequeñas mantener legibilidad */
+@media (max-width: 767.98px) {
+  nav.sidebar {
+    min-height: auto;
+    border-right: none;
+  }
+  .nav.flex-column .nav-link {
+    padding: .45rem .6rem;
+  }
+}
+
+
+
+

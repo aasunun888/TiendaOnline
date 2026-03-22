@@ -1,0 +1,222 @@
+@model TiendaOnline.Areas.Administracion.Models.ProductoModels.ProductoTallasViewModel
+
+@{
+    Layout = "~/Areas/Publica/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Administrar tallas";
+}
+
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Administrar tallas: @Model.Nombre</strong>
+            <a class="btn btn-sm btn-outline-secondary" asp-area="Administracion" asp-controller="Productos" asp-action="Editar" asp-route-id="@Model.ProductoId">Volver</a>
+        </div>
+        <div class="card-body">
+            @* Mostrar mensajes de éxito/ error si existen *@
+            @if (TempData["AdminSuccess"] != null)
+            {
+                <div class="alert alert-success">@TempData["AdminSuccess"]</div>
+            }
+            @if (TempData["AdminError"] != null)
+            {
+                <div class="alert alert-danger">@TempData["AdminError"]</div>
+            }
+            <form asp-area="Administracion" asp-controller="Productos" asp-action="AdministrarTallas" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProductoId" value="@Model.ProductoId" />
+
+                <p class="text-muted">Modifica las tallas y su stock. Puedes añadir o eliminar filas. Al guardar, las tallas existentes se reemplazarán por las enviadas.</p>
+
+                <table class="table table-sm" id="tallas-table">
+                    <thead>
+                        <tr><th>Talla</th><th>Stock</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Tallas.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    <select class="form-select" name="Tallas[@i].Talla" aria-label="Talla">
+                                        <option value="">-- Seleccionar --</option>
+                                        @if (Model.Tallas[i].Talla == "XS")
+                                        {
+                                            <option value="XS" selected>XS</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="XS">XS</option>
+                                        }
+
+                                        @if (Model.Tallas[i].Talla == "S")
+                                        {
+                                            <option value="S" selected>S</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="S">S</option>
+                                        }
+
+                                        @if (Model.Tallas[i].Talla == "M")
+                                        {
+                                            <option value="M" selected>M</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="M">M</option>
+                                        }
+
+                                        @if (Model.Tallas[i].Talla == "L")
+                                        {
+                                            <option value="L" selected>L</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="L">L</option>
+                                        }
+
+                                        @if (Model.Tallas[i].Talla == "XL")
+                                        {
+                                            <option value="XL" selected>XL</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="XL">XL</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" min="0" class="form-control" name="Tallas[@i].Stock" value="@Model.Tallas[i].Stock" />
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarFila(this)">Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="mb-3">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="añadirFila()">Añadir talla</button>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-success">Guardar tallas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Opciones base (sin C# dentro de atributos)
+        const tallaOpcionesHtml = `
+            <option value="">-- Seleccionar --</option>
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+        `;
+
+        // Devuelve un array con las tallas seleccionadas (sin vacíos)
+        function obtenerTallasElegidas() {
+            let selects = document.querySelectorAll('#tallas-table tbody select[name$=".Talla"]');
+
+            let elegidas = [];
+
+            selects.forEach(seleccion => { //Por cada select, si tiene valor no vacío, lo añadimos al array
+                let valor = seleccion.value?.trim();
+                if (valor) elegidas.push(valor);
+            });
+
+            return elegidas;
+        }
+
+        // Actualiza disabled en todas las opciones para evitar duplicados
+        function actualizarDisabled() {
+
+            let elegidas = obtenerTallasElegidas();
+            const selects = document.querySelectorAll('#tallas-table tbody select[name$=".Talla"]');
+
+            selects.forEach(select => {
+
+                let valorActual = select.value;
+
+                Array.from(select.options).forEach(opt => {
+                    if (!opt.value) {
+                        opt.disabled = false;
+                        return;
+                    }
+                    // Si la opción está seleccionada en otro select -> deshabilitar
+                    if (opt.value !== valorActual && elegidas.includes(opt.value)) {
+                        opt.disabled = true;
+                    } else {
+                        opt.disabled = false;
+                    }
+                });
+            });
+        }
+
+        // Añade una fila y engancha el evento change para actualizar estados
+        function añadirFila() {
+            const tbody = document.querySelector('#tallas-table tbody');
+            const index = tbody.querySelectorAll('tr').length;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <select class="form-select" name="Tallas[${index}].Talla" aria-label="Talla">
+                        ${tallaOpcionesHtml}
+                    </select>
+                </td>
+                <td><input type="number" min="0" class="form-control" name="Tallas[${index}].Stock" value="0" /></td>
+                <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarFila(this)">Eliminar</button></td>
+            `;
+            tbody.appendChild(tr);
+
+            // Añadir listener al select recién creado
+            const select = tr.querySelector('select[name$=".Talla"]');
+            if (select) {
+                select.addEventListener('change', () => {
+                    actualizarDisabled();
+                });
+            }
+
+            // Después de añadir reindexar y actualizar opciones
+            reindexarFilas();
+            actualizarDisabled();
+        }
+
+        // Elimina fila y reindexa nombres; actualiza disabled
+        function eliminarFila(btn) {
+            let tr = btn.closest('tr');
+            tr?.remove();
+            reindexarFilas();
+            actualizarDisabled();
+        }
+
+        // Reindexa los names para que el model binder funcione
+        function reindexarFilas() {
+
+            const filas = document.querySelectorAll('#tallas-table tbody tr');
+
+            filas.forEach((fila, i) => {
+                let select = fila.querySelector('select[name$=".Talla"]');
+                let stock = fila.querySelector('input[name$=".Stock"]');
+                if (select) select.name = `Tallas[${i}].Talla`;
+                if (stock) stock.name = `Tallas[${i}].Stock`;
+            });
+        }
+
+        // Inicialización al cargar la vista
+        (function init() {
+            // Registrar listeners en selects existentes
+            document.querySelectorAll('#tallas-table tbody select[name$=".Talla"]').forEach(s => {
+                s.addEventListener('change', actualizarDisabled);
+            });
+
+            // Actualiza el estado inicialmente (por si ya hay tallas duplicadas en la UI)
+            actualizarDisabled();
+        })();
+    </script>
+}

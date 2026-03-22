@@ -1,4 +1,4 @@
-﻿.navbar-nav .nav-link {
+﻿  .navbar-nav .nav-link {
     font-weight: 500;
     font-size: 16px;
 }
@@ -100,6 +100,29 @@ footer input::placeholder {
         text-align: center;
     }
 
+}
+
+/* Sticky footer: hacer que el body sea columna y que el contenedor principal crezca */
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* El container que envuelve el main debe ocupar el espacio restante */
+body > .container-fluid {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El main (contenido principal) crece dentro del container */
+body > .container-fluid main[role="main"] {
+  flex: 1 1 auto;
 }
 
 

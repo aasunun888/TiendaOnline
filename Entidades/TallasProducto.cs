@@ -1,4 +1,4 @@
-﻿namespace TiendaOnline.Entidades
+﻿    namespace TiendaOnline.Entidades
 {
     public class TallasProducto
     {
