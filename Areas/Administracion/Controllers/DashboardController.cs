@@ -129,13 +129,13 @@ namespace TiendaOnline.Areas.Administracion.Controllers
                     {
                         if (int.TryParse(vm.BuscarUsuarios.Trim(), out int uid))//Diferenciar si es num(id) o texto(nombre)
                         {
-                            sql += " WHERE Id = @uId OR Nombre LIKE @uLike OR Apellido LIKE @uLike OR Email LIKE @uLike";
+                            sql += " WHERE u.Id = @uId OR u.Nombre LIKE @uLike OR u.Apellido LIKE @uLike OR u.Email LIKE @uLike";
                             cmd.Parameters.AddWithValue("@uId", uid);
                             cmd.Parameters.AddWithValue("@uLike", $"%{vm.BuscarUsuarios}%");
                         }
                         else
                         {
-                            sql += " WHERE Nombre LIKE @uLike OR Apellido LIKE @uLike OR Email LIKE @uLike";
+                            sql += " WHERE u.Nombre LIKE @uLike OR u.Apellido LIKE @uLike OR u.Email LIKE @uLike";
                             cmd.Parameters.AddWithValue("@uLike", $"%{vm.BuscarUsuarios}%");
                         }
                     }

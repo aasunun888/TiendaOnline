@@ -14,6 +14,15 @@
     <div class="card shadow-sm">
         <div class="card-header"><strong>Editar producto</strong></div>
         <div class="card-body">
+            @* Mostrar mensajes de éxito/ error si existen *@
+            @if (TempData["AdminSuccess"] != null)
+            {
+                <div class="alert alert-success">@TempData["AdminSuccess"]</div>
+            }
+            @if (TempData["AdminError"] != null)
+            {
+                <div class="alert alert-danger">@TempData["AdminError"]</div>
+            }
             <form asp-area="Administracion" asp-controller="Productos" asp-action="EditarPost" method="post" class="row g-0">
                 @Html.AntiForgeryToken()
 

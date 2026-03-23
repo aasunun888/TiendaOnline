@@ -9,6 +9,22 @@
 
 <div class="container mt-5">
     <div class="row align-items-center">
+        <!-- Mensajes de operación (Error / Success) -->
+        <div class="col-12">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+            }
+            else if (TempData["CheckoutError"] != null)
+            {
+                <div class="alert alert-danger" role="alert">@TempData["CheckoutError"]</div>
+            }
+            else if (TempData["CheckoutSuccess"] != null)
+            {
+                <div class="alert alert-success" role="alert">@TempData["CheckoutSuccess"]</div>
+            }
+        </div>
+
         <!-- Imagen del producto -->
         <div class="col-md-6">
             <img src="@Model.ImagenUrl" alt="@Model.Nombre"

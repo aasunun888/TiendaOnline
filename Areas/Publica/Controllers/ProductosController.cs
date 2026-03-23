@@ -22,16 +22,12 @@ namespace TiendaOnline.Areas.Publica.Controllers
         // GET: Productos para mostrar la vista de productos
         [Route("Buscar")]
         [HttpGet]
-        /*Funcion para empezar a buscar, muestra la vista de busqueda con todos los productos por defecto, luego da la opcion de filtrar la busqueda.
-         * Extraer los productos de la base de datos y mostrarlos en la vista de busqueda.
-         * TODO Comprobar la funcionalidad de mostrar views con listas de productos desde la base de datos.
-         */
-        public ActionResult Buscar()
+        public async Task<ActionResult> Buscar()
         {
             //Crear lista de productos para mostrar en la vista de busqueda
             ProductoViewModel Producto = new();
 
-            string conexion = "Server = DESKTOP-RODNH5U\\SQLEXPRESS; Database = StreetSize; Trusted_Connection = True; TrustServerCertificate=True;";
+            string conexion = "Server=DESKTOP-RODNH5U\\SQLEXPRESS; Database = StreetSize; Trusted_Connection = True; TrustServerCertificate=True;";
             string query = "SELECT * FROM Productos WHERE Activo = 1";
 
             try
@@ -63,7 +59,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                         producto.FechaCreacion = fila["FechaCreacion"].Equals(DBNull.Value) ? DateTime.Now : fila.Field<DateTime>("FechaCreacion"); //Comprobar funcionamiento y reajustar TODO
 
 
-                        //Almacenar producto en la lista de productos para mostrar en viewsS
+                        //Almacenar producto en la lista de productos para mostrar en views
                         Producto.ListadoProductos.Add(producto);
                     }
                 }
@@ -71,6 +67,22 @@ namespace TiendaOnline.Areas.Publica.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+
+            // Cargar categorías desde EF: solo categorías con al menos un producto activo asociado
+            try
+            {
+                var categorias = await _context.Categorias
+                    .AsNoTracking()
+                    .Where(c => _context.Productos.Any(p => p.CategoriaId == c.Id && p.Activo))//Subconsulta para evitar cargar categorias sin productos enlazados
+                    .OrderBy(c => c.Nombre)
+                    .ToListAsync();
+
+                Producto.Categorias.AddRange(categorias);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error cargando categorías: " + ex.Message);
             }
 
             ViewBag.Breadcrumb = "Home / Buscar"; //ruta miga de pan
@@ -84,17 +96,12 @@ namespace TiendaOnline.Areas.Publica.Controllers
          * Control de stock desde la base de datos, Control de precio
          */
         [HttpPost("Buscar")]
-        public IActionResult FiltrarPost([FromForm] int? categoriaId, [FromForm] string talla, [FromForm] decimal? precioMax )
+        public async Task<IActionResult> FiltrarPost([FromForm] int? categoriaId, [FromForm] string talla, [FromForm] decimal? precioMax )
         {
             ProductoViewModel Producto = new();
 
             string conexion = "Server=DESKTOP-RODNH5U\\SQLEXPRESS;Database=StreetSize;Trusted_Connection=True;TrustServerCertificate=True;";
 
-            // Consulta con JOIN para acceder a tallas y aplicar filtros
-            /*En la consulta se permiten valores nulos debido a que en el formulario se establece la opcion de "todas" la cual tienes valor NULL, si el usuario no elige nada o deja alguna en null,
-             * en la base de datos lo dará por válido buscando así solamente la información que el usuario haya elegido tener, si elige talla, saldrá todo lo demás filtrando nada mas la talla, es decir,
-             * todos los productos con talla X
-             */
             string query = @"
                             SELECT DISTINCT p.*
                             FROM Productos p
@@ -145,6 +152,23 @@ namespace TiendaOnline.Areas.Publica.Controllers
             {
                 Console.WriteLine(ex.Message);
             }
+
+            // Cargar categorías desde EF para el select (mismas categorías que en GET)
+            try
+            {
+                var categorias = await _context.Categorias
+                    .AsNoTracking()
+                    .Where(c => _context.Productos.Any(p => p.CategoriaId == c.Id && p.Activo)) //Subconsulta para evitar cargar categorias sin productos enlazados
+                    .OrderBy(c => c.Nombre)
+                    .ToListAsync();
+
+                Producto.Categorias.AddRange(categorias);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error cargando categorías: " + ex.Message);
+            }
+
             return View("Buscar", Producto); // Reutiliza la misma vista
 
         }
@@ -184,6 +208,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                         {
                             if (reader.Read())
                             {
+                                //Pasar a variables para controlar posibles nulls y evitar excepciones, aunque en este caso no deberían ser nulls
                                 int ordNombre = reader.GetOrdinal("Nombre");
                                 int ordDescripcion = reader.GetOrdinal("Descripcion");
                                 int ordPrecio = reader.GetOrdinal("Precio");
@@ -193,10 +218,11 @@ namespace TiendaOnline.Areas.Publica.Controllers
                                 int ordFechaCreacion = reader.GetOrdinal("FechaCreacion");
                                 int ordCategoriaNombre = reader.GetOrdinal("CategoriaNombre");
 
+                                // Mapear datos a ViewModel
                                 productoSeleccionado = new ProductoViewModel
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                    Nombre = reader.IsDBNull(ordNombre) ? "" : reader.GetString(ordNombre),
+                                    Nombre = reader.IsDBNull(ordNombre) ? "" : reader.GetString(ordNombre), 
                                     Descripcion = reader.IsDBNull(ordDescripcion) ? "" : reader.GetString(ordDescripcion),
                                     Precio = reader.IsDBNull(ordPrecio) ? 0m : reader.GetDecimal(ordPrecio),
                                     Color = reader.IsDBNull(ordColor) ? "" : reader.GetString(ordColor),
@@ -254,7 +280,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
             return View("DetalleProducto", productoSeleccionado);
         }
 
-        /*TODO Función para mostrar productos relacionados,
+        /* Función para mostrar productos relacionados,
           en base a la categoría del producto seleccionado, mostrar otros productos de la misma categoría.
          */
         [HttpGet]

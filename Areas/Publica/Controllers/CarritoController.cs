@@ -56,80 +56,98 @@ namespace TiendaOnline.Areas.Publica.Controllers
         [HttpPost]
         public IActionResult Agregar(int productoId, int cantidad = 1, string talla = null)
         {
-            //Validar usuario
-            var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid);
-            if (string.IsNullOrEmpty(usuarioIdClaim))
-                return Redirect("/auth/login");
-
-            int usuarioId = int.Parse(usuarioIdClaim);
-
-            //Validar talla seleccionada
-            if (string.IsNullOrEmpty(talla))                    
-            {
-                TempData["Error"] = "Debes seleccionar una talla.";
-                return Redirect(Request.Headers["Referer"].ToString());
-            }
-
-            //Validar que la talla sea una de las fijas (S, M, L, XL)
-            var tallasValidas = new[] { "S", "M", "L", "XL" };
-            if (!tallasValidas.Contains(talla))
-            {
-                TempData["Error"] = "La talla seleccionada no es válida.";
-                return RedirectToAction("Index");
-            }
-
+            //Inicializar variables para tallaProductoId y stock, se asignarán al validar la talla seleccionada
             int tallaProductoId;
             int stock;
 
-            //Buscar la talla en la tabla TallaProducto
-            using (var connection = new SqlConnection(conexion))
+            try
             {
-                connection.Open();
+                //Validar usuario
+                var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid);
+                if (string.IsNullOrEmpty(usuarioIdClaim))
+                    return Redirect("/auth/login");
 
-                var cmd = new SqlCommand(
-                    "SELECT Id, Stock FROM TallasProducto WHERE ProductoId = @prodId AND Talla = @talla",
-                    connection);
-                cmd.Parameters.AddWithValue("@prodId", productoId);
-                cmd.Parameters.AddWithValue("@talla", talla);
+                int usuarioId = int.Parse(usuarioIdClaim);
 
-                using (var reader = cmd.ExecuteReader())
+                //Validar talla seleccionada
+                if (string.IsNullOrEmpty(talla))
                 {
-                    if (!reader.Read())
-                    {
-                        TempData["Error"] = "La talla seleccionada no existe para este producto.";
-                        return RedirectToAction("Index");
-                    }
-
-                    tallaProductoId = reader.GetInt32(0);
-                    stock = reader.GetInt32(1);
+                    TempData["Error"] = "Debes seleccionar una talla.";
+                    return RedirectToAction("Detalle", "Productos", new { area = "Publica", id = productoId });
                 }
-            }
 
-            //Validar stock
-            if (stock < cantidad)
+                //Validar que la talla sea una de las fijas (XS,S, M, L, XL)
+                var tallasValidas = new[] { "XS", "S", "M", "L", "XL" };
+                if (!tallasValidas.Contains(talla))
+                {
+                    TempData["Error"] = "La talla seleccionada no es válida.";
+                    return RedirectToAction("Index");
+                }
+
+               
+
+                //Buscar la talla en la tabla TallaProducto
+                using (var connection = new SqlConnection(conexion))
+                {
+                    connection.Open();
+
+                    var cmd = new SqlCommand(
+                        "SELECT Id, Stock FROM TallasProducto WHERE ProductoId = @prodId AND Talla = @talla",
+                        connection);
+                    cmd.Parameters.AddWithValue("@prodId", productoId);
+                    cmd.Parameters.AddWithValue("@talla", talla);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            TempData["Error"] = "La talla seleccionada no existe para este producto."; 
+                            return RedirectToAction("Detalle", "Productos", new { area = "Publica", id = productoId });
+                        }
+
+
+                        //Asignar valores de Id de talla y stock a las variables inicializadas
+                        //Valor 0 porque es el primer valor del indice del select (Id) y el segundo valor (Stock) es el índice 1
+                        tallaProductoId = reader.GetInt32(0);
+                        stock = reader.GetInt32(1);
+                    }
+                }
+
+                //Validar stock
+                if (stock < cantidad)
+                {
+                    TempData["Error"] = $"No hay stock suficiente para la talla seleccionada."; 
+                    return RedirectToAction("Detalle", "Productos", new { area = "Publica", id = productoId });
+                }
+
+                //Obtener o crear carrito
+                var carrito = ObtenerCarrito(usuarioId) ?? CrearCarrito(usuarioId);
+
+                //Buscar si ya existe el item con esa talla
+                var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId && i.TallaProductoId == tallaProductoId);
+
+                //Insertar o actualizar
+                if (item != null)
+                {
+                    ActualizarCantidad(item.Id, item.Cantidad + cantidad);
+                }
+                else
+                {
+                    InsertarItem(carrito.Id, productoId, cantidad, tallaProductoId);
+                }
+
+                // Redirigir al index del carrito para mostrar el carrito actualizado
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
             {
-                TempData["Error"] = "No hay stock suficiente para la talla seleccionada.";
-                return Redirect(Request.Headers["Referer"].ToString());
+                // Guardar mensaje amigable y redirigir al origen (si existe) o a la vista de detalle
+                TempData["Error"] = "No se pudo añadir el producto al carrito. Inténtalo de nuevo.";
+                // opcionalmente log ex.Message en servidor
+                var refUrl = Request.Headers["Referer"].ToString();
+                if (!string.IsNullOrEmpty(refUrl)) return Redirect(refUrl);
+                return RedirectToAction("Detalle", "Productos", new { area = "Publica", id = productoId });
             }
-
-            //Obtener o crear carrito
-            var carrito = ObtenerCarrito(usuarioId) ?? CrearCarrito(usuarioId);
-
-            //Buscar si ya existe el item con esa talla
-            var item = carrito.Items.FirstOrDefault(i => i.ProductoId == productoId && i.TallaProductoId == tallaProductoId);
-
-            //Insertar o actualizar
-            if (item != null)
-            {
-                ActualizarCantidad(item.Id, item.Cantidad + cantidad);
-            }
-            else
-            {
-                InsertarItem(carrito.Id, productoId, cantidad, tallaProductoId);
-            }
-
-            // Redirigir al index del carrito para mostrar el carrito actualizado
-            return RedirectToAction("Index");
         }
 
         // Nueva sobrecarga GET para Agregar que comprueba stock antes de incrementar/insertar

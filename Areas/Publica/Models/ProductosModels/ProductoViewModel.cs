@@ -24,7 +24,8 @@ namespace TiendaOnline.Areas.Publica.Models.ProductosModels
         // Relación con tallas
         public List<TallasProducto> TallasProducto { get; set; } = new List<TallasProducto>();
 
-
+        // Lista de categorías disponibles (llenada desde BD para el select en la vista Buscar)
+        public List<Categoria> Categorias { get; set; } = new List<Categoria>();
 
     }
 }

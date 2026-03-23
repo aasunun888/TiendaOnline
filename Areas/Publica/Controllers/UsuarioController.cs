@@ -123,7 +123,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
                             // Redirigir según rol
                             if (string.Equals(rol, "Admin", StringComparison.OrdinalIgnoreCase) ||
                                 string.Equals(rol, "Administración", StringComparison.OrdinalIgnoreCase) ||
-                                string.Equals(rol, "Administrador", StringComparison.OrdinalIgnoreCase))
+                                string.Equals(rol, "Administrador", StringComparison.OrdinalIgnoreCase)) //La correcta, las demas por si hay diferentes roles de admin en la base de datos o errores de escritura
                             {
                                 // Redirigir a dashboard
                                 return RedirectToAction("Index","Dashboard", new { area = "Administracion" });
@@ -209,29 +209,10 @@ namespace TiendaOnline.Areas.Publica.Controllers
                         // Comprobar si el usuario ya existe
                         if (resultado != null)
                         {
-                            bool activo = Convert.ToBoolean(resultado); // Suponiendo que 'Activo' es un campo booleano en la base de datos(Bit 1 activo 0 inactivo)
-
-                            //Si el usuario existe pero está inactivo, permitir reactivación
-                            if (!activo)
-                            {
-                                //Se realiza el update para reactivar la cuenta
-                                string reactivarQuery = "UPDATE Usuarios SET Activo = 1 WHERE Email = @Email;";
-                                using (SqlCommand reactivarCmd = new SqlCommand(reactivarQuery, conn))
-                                {
-                                    reactivarCmd.Parameters.AddWithValue("@Email", Email);
-                                    reactivarCmd.ExecuteNonQuery();
-                                }
-
-                                Usuario.usuarioExistente = "Tu cuenta ha sido reactivada. ¡Bienvenido de nuevo!"; //TODO Añadir redirección al login y no mostrar el mensaje en el registro
-                                return View("Registrar", Usuario);
-                            }
-                            //Si el usuario ya está activo, mostrar mensaje de error
-                            else
-                            {
-                                // El usuario ya está registrado y activo
-                                Usuario.usuarioExistente = "Ya hay una cuenta asociada a ese correo";
-                                return View("Registrar", Usuario);
-                            }
+                           // El usuario ya está registrado y activo
+                            Usuario.usuarioExistente = "Ya hay una cuenta asociada a ese correo";
+                            return View("Registrar", Usuario);
+                            
                         }
                     }
                 }

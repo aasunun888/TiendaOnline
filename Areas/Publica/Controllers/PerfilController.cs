@@ -28,7 +28,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (!TryGetCurrentUserId(out int usuarioId))
+            if (!ObtenerIdUsuario(out int usuarioId))
                 return RedirectToAction("Login", "Usuario");
 
             var vm = new PerfilViewModel();
@@ -57,7 +57,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
         [Route("usuario/perfil/actualizar")]
         public async Task<IActionResult> Actualizar(PerfilViewModel model)
         {
-            if (!TryGetCurrentUserId(out int usuarioId))
+            if (!ObtenerIdUsuario(out int usuarioId))
                 return RedirectToAction("Login", "Usuario");
 
             if (model == null || model.Usuario == null)
@@ -150,7 +150,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarCuenta() // <-- POST: /usuario/perfil/eliminar 
         {
-            if (!TryGetCurrentUserId(out int usuarioId))
+            if (!ObtenerIdUsuario(out int usuarioId))
                 return RedirectToAction("Login", "Usuario");
 
             var strategy = _context.Database.CreateExecutionStrategy(); // Estrategia de reintentos para manejar transacciones en EF Core
@@ -240,7 +240,7 @@ namespace TiendaOnline.Areas.Publica.Controllers
 
 
         // Helper para obtener id de usuario actual desde claims
-        private bool TryGetCurrentUserId(out int usuarioId)
+        private bool ObtenerIdUsuario(out int usuarioId)
         {
             usuarioId = 0;
             var usuarioIdClaim = User.FindFirstValue(ClaimTypes.Sid) ?? User.FindFirstValue(ClaimTypes.NameIdentifier);

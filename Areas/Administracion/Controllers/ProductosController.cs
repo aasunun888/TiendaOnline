@@ -423,9 +423,21 @@ namespace TiendaOnline.Areas.Administracion.Controllers
                     await _context.TallasProducto.AddRangeAsync(nuevas);
                 }
 
+                // Guardar cambios iniciales (eliminación + posibles inserciones)
                 await _context.SaveChangesAsync();
 
-                TempData["AdminSuccess"] = "Tallas actualizadas correctamente.";
+                // Comprobar si el producto se quedó sin tallas y deshabilitarlo automáticamente en ese caso
+                var totalTallas = await _context.TallasProducto.CountAsync(t => t.ProductoId == model.ProductoId);
+                if (totalTallas == 0)
+                {
+                    producto.Activo = false;
+                    await _context.SaveChangesAsync();
+                    TempData["AdminSuccess"] = "Tallas actualizadas. El producto se ha deshabilitado porque no quedan tallas.";
+                }
+                else
+                {
+                    TempData["AdminSuccess"] = "Tallas actualizadas correctamente.";
+                }
             }
             catch (Exception ex)
             {

@@ -81,18 +81,18 @@
                                     <div class="row g-2">
                                         <div class="col-md-8">
                                             <label class="form-label">Número de tarjeta</label>
-                                            <input id="numeroTarjeta" class="form-control" name="TarjetaNumero" placeholder="1234-5678-1234-1234" />
+                                            <input id="numeroTarjeta" required class="form-control" name="TarjetaNumero" placeholder="1234-5678-1234-1234" />
                                             <small id="resultado-validacion-numero" class="text-danger d-block mt-1"></small>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">CVC</label>
-                                            <input id="CVC" class="form-control" name="TarjetaCVV" placeholder="CVV" />
+                                            <input id="CVC" class="form-control" required name="TarjetaCVV" placeholder="CVV" />
                                             <small id="resultado-validacion-cvc" class="text-danger d-block mt-1"></small>
                                         </div>
 
                                         <div class="col-md-6 mt-2">
                                             <label class="form-label">Nombre en la tarjeta</label>
-                                            <input id="nombre-input" class="form-control" placeholder="Nombre completo" type="text" name="nombre-dueño">
+                                            <input id="nombre-input" required  class="form-control" placeholder="Nombre completo" type="text" name="nombre-dueño">
                                             <small id="resultado-validacion-nombre" class="text-danger d-block mt-1"></small>
                                         </div>
 
@@ -100,8 +100,8 @@
                                             <div class="w-100">
                                                 <label class="form-label">Fecha (MM / YY)</label>
                                                 <div class="d-flex gap-2">
-                                                    <input id="mes" class="form-control tamanyo-input-fecha" placeholder="MM" type="text">
-                                                    <input id="anyo" class="form-control tamanyo-input-fecha" placeholder="YY" type="text">
+                                                    <input id="mes" class="form-control tamanyo-input-fecha" required placeholder="MM" type="text">
+                                                    <input id="anyo" class="form-control tamanyo-input-fecha" required placeholder="YY" type="text">
                                                 </div>
                                                 <small id="validacion-fecha" class="text-danger d-block mt-1"></small>
                                             </div>
